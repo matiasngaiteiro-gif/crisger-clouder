@@ -15,7 +15,7 @@ function h(tag, props = {}, children = []) {
     if (value === undefined || value === null || value === false) continue;
     if (key === 'class') node.className = value;
     else if (key === 'text') node.textContent = value;
-    else if (key === 'style' && typeof value === 'object') Object.assign(node.style, value);
+    else if (key === 'style' && typeof value === 'object') { for (const [k, v] of Object.entries(value)) k.startsWith('--') ? node.style.setProperty(k, v) : (node.style[k] = v); }
     else if (key.startsWith('on') && typeof value === 'function') node.addEventListener(key.slice(2), value);
     else if (key in node && !key.includes('-') && key !== 'list') node[key] = value;
     else node.setAttribute(key, value === true ? '' : value);
@@ -55,6 +55,7 @@ let lightboxList = [];
 let lightboxIndex = 0;
 let lightboxOpener = null;
 let revealObserver = null;
+let liveObserver = null;
 
 const LOGO_VARIANTS = [['principal', 'Principal'], ['vertical', 'Vertical'], ['compacto', 'Compacta'], ['logotipo', 'Logotipo'], ['isotipo', 'Isotipo']];
 const LOGO_BGS = [['claro', 'Claro'], ['oscuro', 'Oscuro'], ['naranja', 'Naranja']];
@@ -74,6 +75,18 @@ const THEMES = [['light', 'Blanco cálido'], ['white', 'Blanco'], ['dark', 'Negr
 const safeId = id => String(id || '').trim().replace(/[^a-z0-9-]/gi, '-').toLowerCase() || 'seccion';
 const logoAsset = (variant, bg) => data.logos?.[variant]?.[bg] || data.logos?.principal?.[bg] || DEFAULT_LOGO;
 const pad2 = n => String(n).padStart(2, '0');
+
+/* ---------- Titulares animados palabra por palabra ---------- */
+function splitWords(node, text, { emLast = false, offset = 0 } = {}) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  node.setAttribute('aria-label', words.join(' '));
+  words.forEach((word, i) => {
+    const inner = emLast && i === words.length - 1 ? h('span', {}, h('em', { text: word })) : h('span', { text: word });
+    node.append(h('span', { class: 'w', 'aria-hidden': 'true', style: { '--i': i + offset } }, inner));
+    if (i < words.length - 1) node.append(' ');
+  });
+  return node;
+}
 
 /* ---------- Color ---------- */
 const isHex = v => /^#[0-9a-f]{6}$/i.test(String(v || ''));
@@ -102,7 +115,7 @@ function toast(message) {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => node.classList.remove('show'), 2600);
 }
-async function copyText(value, label = value) {
+async function copyText(value, label = value, origin = null) {
   try {
     if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(value);
     else {
@@ -110,6 +123,7 @@ async function copyText(value, label = value) {
       document.body.append(area); area.select(); document.execCommand('copy'); area.remove();
     }
     toast(`${label} copiado`);
+    if (origin) { origin.querySelector('.copied-flag')?.remove(); const flag = h('span', { class: 'copied-flag', 'aria-hidden': 'true', text: '✓ Copiado' }); origin.append(flag); setTimeout(() => flag.remove(), 1400); }
   } catch { toast(`Copiá manualmente: ${value}`); }
 }
 
@@ -167,12 +181,13 @@ function render() {
   for (const id of ['#navLogo', '#footerLogo', '#lightboxLogo']) { $(id).src = logoAsset('principal', 'oscuro'); $(id).alt = data.brand; }
   $('#navLabel').textContent = data.heroLabel;
   $('#navVersion').textContent = data.version;
-  $('#footerText').textContent = data.footerText;
+  const footerText = $('#footerText'); footerText.replaceChildren(); splitWords(footerText, data.footerText);
   $('#footerVersion').textContent = `${data.heroLabel} · ${data.version}`;
   $('#footerLocation').textContent = [data.descriptor, data.location].filter(Boolean).join(' · ');
 
   const list = $('#navList');
-  list.replaceChildren(...data.sections.map(s => h('li', {}, h('a', { href: `#${s.id}`, text: s.navLabel || s.title }))));
+  list.replaceChildren(...data.sections.map(s => h('li', {}, h('a', { href: `#${s.id}`, text: s.navLabel || s.title }))), h('li', { class: 'nav-indicator', 'aria-hidden': 'true' }));
+  activeId = null;
 
   const main = $('#main');
   main.replaceChildren(renderHero(), ...data.sections.map((s, i) => renderSection(s, i)));
@@ -198,7 +213,7 @@ function renderHero() {
     h('div', { class: 'hero-inner' }, [
       h('img', { class: 'hero-logo', src: logoAsset('principal', 'oscuro'), alt: [data.brand, data.descriptor].filter(Boolean).join(' · '), width: 730, height: 120 }),
       h('p', { class: 'hero-label' }, [h('span', { text: data.heroLabel }), h('span', { class: 'dot', 'aria-hidden': 'true' }), h('span', { text: `Versión ${data.version}` })]),
-      h('h1', { id: 'heroTitle' }, [words.length ? words.join(' ') + ' ' : '', h('em', { text: last })]),
+      splitWords(h('h1', { id: 'heroTitle' }), [...words, last].join(' '), { emLast: true }),
       h('p', { class: 'hero-text', text: data.heroText })
     ]),
     h('div', { class: 'hero-bottom' }, [
@@ -212,7 +227,7 @@ function renderSection(s, index) {
   const headId = `${s.id}-title`;
   const sec = h('section', { class: `chapter theme-${s.theme}`, id: s.id, 'aria-labelledby': headId, tabindex: '-1' });
   const head = h('header', { class: 'chapter-head reveal' }, [
-    h('div', {}, [h('span', { class: 'kicker', text: s.kicker }), h('h2', { id: headId, text: s.title })]),
+    h('div', {}, [h('span', { class: 'kicker', text: s.kicker }), splitWords(h('h2', { id: headId }), s.title)]),
     h('div', { class: 'chapter-lead' }, [h('p', { text: s.lead }), s.note ? h('p', { class: 'chapter-note', text: s.note }) : null])
   ]);
   sec.append(head);
@@ -239,7 +254,7 @@ function renderModule(s, m, i) {
     h('h3', { text: m.title }),
     m.body ? h('p', { class: 'module-body', text: m.body }) : null
   ]);
-  if (m.items.length && !ITEMS_INTERNAL.has(m.kind)) copy.append(h('ul', { class: 'module-list' }, m.items.map(x => h('li', { text: x }))));
+  if (m.items.length && !ITEMS_INTERNAL.has(m.kind)) copy.append(h('ul', { class: 'module-list stagger' }, m.items.map(x => h('li', { text: x }))));
   if (m.note) copy.append(h('p', { class: 'module-note', text: m.note }));
   const visual = h('div', { class: 'module-visual' });
   const renderers = {
@@ -252,7 +267,7 @@ function renderModule(s, m, i) {
   if (i % 2 === 1 && !wide) article.classList.add('reverse');
   article.append(copy, visual);
   if (m.kind === 'essence' && m.items.length) {
-    article.append(h('ol', { class: 'concepts' }, m.items.map((item, n) =>
+    article.append(h('ol', { class: 'concepts stagger' }, m.items.map((item, n) =>
       h('li', { class: 'concept' }, [h('span', { text: pad2(n + 1) }), h('strong', { text: item })]))));
   }
   return article;
@@ -354,7 +369,8 @@ const ERROR_RULES = [
 function renderIncorrect(host, m) {
   const fallback = ERROR_RULES.map(r => r[1]);
   const logo = logoAsset('principal', 'claro');
-  const grid = h('div', { class: 'incorrect-grid' });
+  const grid = h('div', { class: 'incorrect-grid stagger' });
+  host.append(h('p', { class: 'incorrect-hint', text: 'Pasá el cursor o tocá un ejemplo para compararlo con el logo correcto.' }));
   grid.append(h('div', { class: 'incorrect-card is-correct' }, [
     h('div', { class: 'incorrect-stage' }, h('img', { src: logo, alt: 'Logo original sin alteraciones' })),
     h('p', { class: 'incorrect-caption' }, [h('span', { class: 'mark ok', 'aria-hidden': 'true', text: '✓' }), h('strong', { text: 'Uso correcto' })])
@@ -364,7 +380,9 @@ function renderIncorrect(host, m) {
     const stage = h('div', { class: 'incorrect-stage' }, [
       h('div', { class: `error-logo error-${style}` }, h('img', { src: logo, alt: `Ejemplo incorrecto: ${label}` }))
     ]);
-    grid.append(h('div', { class: 'incorrect-card' }, [stage,
+    const toggle = card => { const on = card.classList.toggle('show-correct'); card.setAttribute('aria-pressed', String(on)); };
+    grid.append(h('div', { class: 'incorrect-card', role: 'button', tabindex: '0', 'aria-pressed': 'false', 'aria-label': `${label}. Activá para ver el logo correcto.`, style: { '--i': i },
+      onclick: e => toggle(e.currentTarget), onkeydown: e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(e.currentTarget); } } }, [stage,
       h('p', { class: 'incorrect-caption' }, [h('span', { class: 'mark no', 'aria-hidden': 'true', text: '×' }), h('strong', { text: label })])]));
   });
   host.append(grid);
@@ -375,11 +393,11 @@ function buildPattern(i) {
   const iso = logoAsset('isotipo', 'naranja');
   const stage = h('div', { class: `pattern-stage pattern-${i}`, 'aria-hidden': 'true' });
   if (i === 0) {
-    for (let n = 0; n < 12 * 10; n++) stage.append(h('img', { src: iso, alt: '' }));
+    for (let n = 0; n < 12 * 10; n++) stage.append(h('img', { src: iso, alt: '', style: { '--d': `${(((n % 12) + Math.floor(n / 12)) * 0.16).toFixed(2)}s` } }));
   } else {
     for (let r = 0; r < 10; r++) {
       const row = h('div', { class: 'pattern-row' });
-      for (let c = 0; c < 10; c++) row.append(h('img', { src: iso, alt: '', class: (r + c) % 2 ? 'soft' : '' }));
+      for (let c = 0; c < 20; c++) row.append(h('img', { src: iso, alt: '', class: (r + c) % 2 ? 'soft' : '' }));
       stage.append(row);
     }
   }
@@ -426,11 +444,11 @@ function renderPatterns(host, m) {
 
 /* ---------- Color ---------- */
 function renderPalette(host) {
-  const grid = h('div', { class: 'palette-bento' });
+  const grid = h('div', { class: 'palette-bento stagger' });
   data.palette.forEach((c, i) => {
     const ink = inkFor(c.hex);
     grid.append(h('button', { type: 'button', class: `palette-tile tile-${i}${i === 0 ? ' is-main' : ''}`, style: { background: c.hex, color: ink },
-      'aria-label': `Copiar HEX ${c.hex} de ${c.name}`, onclick: () => copyText(c.hex) }, [
+      'aria-label': `Copiar HEX ${c.hex} de ${c.name}`, onclick: e => copyText(c.hex, c.hex, e.currentTarget) }, [
       h('span', { class: 'tile-top' }, [h('strong', { text: c.name }), h('span', { class: 'tile-copy' }, [icon(ICONS.copy), 'Copiar'])]),
       h('span', { class: 'tile-codes' }, [
         h('b', { class: 'tile-hex', text: c.hex }),
@@ -443,7 +461,7 @@ function renderPalette(host) {
   [['Degradado cálido', `linear-gradient(135deg, ${orange} 0%, ${black} 100%)`, `${orange} → ${black}`],
    ['Degradado profundo', `linear-gradient(90deg, ${black} 0%, ${black} 20%, ${orange} 100%)`, `${black} → ${orange}`]].forEach(([name, bg, codes], i) => {
     grid.append(h('button', { type: 'button', class: `palette-tile gradient-tile g-${i}`, style: { background: bg, color: '#FFFFFF' },
-      'aria-label': `Copiar CSS del ${name.toLowerCase()}`, onclick: () => copyText(bg, 'Degradado') }, [
+      'aria-label': `Copiar CSS del ${name.toLowerCase()}`, onclick: e => copyText(bg, 'Degradado', e.currentTarget) }, [
       h('span', { class: 'tile-top' }, [h('strong', { text: name }), h('span', { class: 'tile-copy' }, [icon(ICONS.copy), 'Copiar CSS'])]),
       h('span', { class: 'tile-codes' }, [h('b', { class: 'tile-hex', text: 'Naranja → negro' }), h('span', { text: codes })])
     ]));
@@ -476,9 +494,9 @@ function renderToneLab(host) {
       const current = mixHex(color, target, amount);
       return h('div', { class: 'tone-panel' }, [
         h('div', { class: 'tone-head' }, [h('strong', { text: name }), h('span', { text: desc })]),
-        h('div', { class: 'tone-ramp' }, steps.map((hex, n) => h('button', { type: 'button', class: 'tone-swatch', style: { background: hex, color: inkFor(hex) },
-          'aria-label': `Copiar ${hex}`, title: `Copiar ${hex}`, onclick: () => copyText(hex) }, h('span', { text: n ? `${n * 20}%` : 'Base' })))),
-        h('button', { type: 'button', class: 'tone-current', style: { background: current, color: inkFor(current) }, onclick: () => copyText(current) }, [
+        h('div', { class: 'tone-ramp' }, steps.map((hex, n) => h('button', { type: 'button', class: 'tone-swatch', style: { background: hex, color: inkFor(hex), '--i': n },
+          'aria-label': `Copiar ${hex}`, title: `Copiar ${hex}`, onclick: e => copyText(hex, hex, e.currentTarget) }, h('span', { text: n ? `${n * 20}%` : 'Base' })))),
+        h('button', { type: 'button', class: 'tone-current', style: { background: current, color: inkFor(current) }, onclick: e => copyText(current, current, e.currentTarget) }, [
           h('span', { text: `${ui.toneAmount}% · ${name === 'Matices' ? 'matiz' : 'tono'}` }), h('b', { text: current }), h('small', {}, [icon(ICONS.copy), 'Copiar'])
         ])
       ]);
@@ -547,7 +565,7 @@ function renderTypeLogo(host) {
 }
 function renderTypeDisplay(host) {
   const weights = [[400, 'Regular', 'Textos breves de interfaz'], [600, 'SemiBold', 'Subtítulos y niveles secundarios'], [700, 'Bold', 'Titulares principales']];
-  host.append(h('div', { class: 'type-weights font-bai' }, weights.map(([w, name, use]) => h('div', { class: 'weight-card', style: { fontWeight: w } }, [
+  host.append(h('div', { class: 'type-weights font-bai stagger' }, weights.map(([w, name, use]) => h('div', { class: 'weight-card', style: { fontWeight: w } }, [
     h('div', { class: 'weight-head' }, [h('span', { text: `Bai Jamjuree ${name}` }), h('span', { text: String(w) })]),
     h('div', { class: 'weight-aa', text: 'Aa' }),
     h('div', { class: 'weight-alpha' }, ['ABCDEFGHIJKLMN', h('br'), 'ÑOPQRSTUVWXYZ']),
@@ -573,7 +591,7 @@ function renderTypeScale(host, m) {
     const tag = cls === 'scale-body' ? 'p' : 'span';
     return h('div', { class: 'scale-row' }, [h('span', { class: 'scale-meta', text: meta.trim() }), h(tag, { class: `scale-sample ${cls}`, text: sample.trim() })]);
   });
-  host.append(h('div', { class: 'type-scale' }, rows));
+  host.append(h('div', { class: 'type-scale stagger' }, rows));
 }
 
 /* ---------- Galería ---------- */
@@ -582,7 +600,7 @@ function renderGallery(items) {
   const categories = ['Todas', ...new Set(items.map(m => m.category || 'Otras'))];
   if (!categories.includes(ui.filter)) ui.filter = 'Todas';
   const filters = h('div', { class: 'gallery-filters', role: 'group', 'aria-label': 'Filtrar aplicaciones por categoría' });
-  const grid = h('ul', { class: 'gallery-grid' });
+  const grid = h('ul', { class: 'gallery-grid stagger' });
   const status = h('p', { class: 'sr-only', 'aria-live': 'polite' });
   const cards = items.map(m => {
     const btn = h('button', { type: 'button', class: 'gallery-card', 'aria-label': `Ampliar ${m.title}` , onclick: e => openLightbox(galleryEntries, galleryEntries.indexOf(m), e.currentTarget) }, [
@@ -599,7 +617,10 @@ function renderGallery(items) {
     ui.filter = category;
     galleryEntries = category === 'Todas' ? items : items.filter(m => (m.category || 'Otras') === category);
     $$('button', filters).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cat === category)));
-    grid.replaceChildren(...cards.filter(c => galleryEntries.includes(c.m)).map(c => c.li));
+    const visible = cards.filter(c => galleryEntries.includes(c.m)).map(c => c.li);
+    visible.forEach((li, i) => li.style.setProperty('--i', i));
+    wrap.classList.toggle('is-filtering', !!announce);
+    grid.replaceChildren(...visible);
     if (announce) status.textContent = `${galleryEntries.length} ${galleryEntries.length === 1 ? 'aplicación' : 'aplicaciones'} en ${category.toLowerCase()}`;
   }
   categories.forEach(cat => {
@@ -624,10 +645,11 @@ function openLightbox(list, index, opener) {
   document.documentElement.classList.add('modal-open');
   $('#lightboxClose').focus();
 }
-function drawLightbox() {
+function drawLightbox(direction = 0) {
   const m = lightboxList[lightboxIndex];
   const img = $('#lightboxImg');
-  img.classList.remove('loaded');
+  img.classList.remove('loaded', 'from-right', 'from-left');
+  if (direction) { void img.offsetWidth; img.classList.add(direction > 0 ? 'from-right' : 'from-left'); }
   img.onload = () => img.classList.add('loaded');
   img.src = m.media;
   img.alt = /mockup-/.test(m.media) ? `Maqueta conceptual: ${m.title}` : m.title;
@@ -643,7 +665,7 @@ function drawLightbox() {
 function stepLightbox(delta) {
   const n = lightboxIndex + delta;
   if (n < 0 || n >= lightboxList.length) return;
-  lightboxIndex = n; drawLightbox();
+  lightboxIndex = n; drawLightbox(delta);
 }
 function initLightbox() {
   const dlg = $('#lightbox');
@@ -684,6 +706,7 @@ function updateActiveNav() {
   if (atBottom && data?.sections.length) current = data.sections.at(-1).id;
   if (current === activeId) return;
   activeId = current;
+  requestAnimationFrame(moveIndicator);
   $$('#navList a').forEach(a => {
     const on = a.hash === `#${current}`;
     a.classList.toggle('active', on);
@@ -694,17 +717,47 @@ function updateActiveNav() {
     } else a.removeAttribute('aria-current');
   });
 }
+function moveIndicator() {
+  const indicator = $('.nav-indicator');
+  const link = $('#navList a.active');
+  if (!indicator) return;
+  if (!link) { indicator.classList.remove('on'); return; }
+  const pad = parseFloat(getComputedStyle(link).paddingLeft) || 12;
+  indicator.style.width = `${link.offsetWidth - pad * 2}px`;
+  indicator.style.transform = `translateX(${link.parentElement.offsetLeft + pad}px)`;
+  indicator.classList.add('on');
+}
+function parallax() {
+  if (reduceMotion()) return;
+  const vh = window.innerHeight;
+  const hero = $('.hero-decor');
+  if (hero && window.scrollY < vh * 1.2) hero.style.setProperty('--hero-py', `${window.scrollY * 0.25}px`);
+  for (const img of $$('.feature-media img:not(.feature-badge), .media-button img')) {
+    const r = img.parentElement.getBoundingClientRect();
+    if (r.bottom < 0 || r.top > vh) continue;
+    const progress = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+    img.style.setProperty('--py', `${(progress * -24).toFixed(1)}px`);
+  }
+}
 function onScroll() {
   const root = document.documentElement;
   const max = Math.max(1, root.scrollHeight - root.clientHeight);
   $('#progress span').style.transform = `scaleX(${Math.min(1, window.scrollY / max)})`;
   $('#backToTop').classList.toggle('visible', window.scrollY > window.innerHeight * 0.9);
+  $('#backToTop').style.setProperty('--p', Math.min(1, window.scrollY / max).toFixed(3));
+  parallax();
   $('#header').classList.toggle('scrolled', window.scrollY > 10);
   updateActiveNav();
 }
 function prepareReveals(root) {
   revealObserver?.disconnect();
-  const targets = $$('.reveal', root);
+  $$('.stagger').forEach(group => [...group.children].forEach((child, i) => child.style.setProperty('--i', Math.min(i, 14))));
+  liveObserver?.disconnect();
+  if ('IntersectionObserver' in window) {
+    liveObserver = new IntersectionObserver(entries => entries.forEach(e => e.target.classList.toggle('is-live', e.isIntersecting)), { threshold: 0.15 });
+    $$('.pattern-stage', root).forEach(st => liveObserver.observe(st));
+  }
+  const targets = [...$$('.reveal', root), ...$$('.footer .reveal')];
   if (ui.revealAll || !('IntersectionObserver' in window) || reduceMotion()) { targets.forEach(x => x.classList.add('in-view')); return; }
   document.documentElement.classList.add('js-reveal');
   revealObserver = new IntersectionObserver(entries => {
@@ -715,7 +768,7 @@ function prepareReveals(root) {
 function initNavigation() {
   let ticking = false;
   window.addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { onScroll(); ticking = false; }); } }, { passive: true });
-  window.addEventListener('resize', () => { measureHeader(); onScroll(); });
+  window.addEventListener('resize', () => { measureHeader(); onScroll(); moveIndicator(); });
   $('#backToTop').addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
     $('.header-logo').focus({ preventScroll: true });
@@ -928,12 +981,12 @@ function initEditor() {
   const dlg = $('#editor');
   let opener = null;
   $('#editEntry').addEventListener('click', e => {
-    opener = e.currentTarget; ui.revealAll = true; render();
+    opener = e.currentTarget; ui.revealAll = true; document.documentElement.classList.add('editing'); render();
     dlg.showModal(); document.documentElement.classList.add('modal-open');
     renderEditor(); $('#closeEditor').focus();
   });
   $('#closeEditor').addEventListener('click', () => dlg.close());
-  dlg.addEventListener('close', () => { clearTimeout(renderTimer); render(); document.documentElement.classList.remove('modal-open'); opener?.focus({ preventScroll: true }); });
+  dlg.addEventListener('close', () => { clearTimeout(renderTimer); render(); document.documentElement.classList.remove('modal-open', 'editing'); opener?.focus({ preventScroll: true }); });
   const tabs = $$('.editor-tabs [role=tab]');
   tabs.forEach((b, i) => {
     b.addEventListener('click', () => { editorState.tab = b.dataset.tab; renderEditor(); });
@@ -977,6 +1030,8 @@ async function fetchData() {
   return res.json();
 }
 (async function init() {
+  document.documentElement.classList.add('intro');
+  setTimeout(() => document.documentElement.classList.remove('intro'), 3200);
   initNavigation();
   initLightbox();
   initEditor();

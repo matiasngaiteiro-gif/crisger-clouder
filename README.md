@@ -26,6 +26,20 @@ README.md
 
 Algunas maquetas también aparecen dentro de su sección: la fachada en Esencia, el vehículo en Logo, el packaging en Recursos, la señalización en Colores y el catálogo en Tipografía.
 
+## Animaciones
+
+Las animaciones acompañan la lectura sin distraer y usan solo recursos de la marca:
+
+- **Portada**: el logo aparece con un barrido, el título entra palabra por palabra, el degradado naranja-negro se desplaza lentamente y los isotipos del fondo flotan con parallax al hacer scroll.
+- **Titulares**: cada título de sección se revela palabra por palabra y la línea naranja del número crece al entrar en pantalla.
+- **Entradas escalonadas**: los colores, conceptos, pesos tipográficos, niveles de jerarquía, usos incorrectos y maquetas de la galería aparecen en secuencia.
+- **Usos incorrectos**: cada ejemplo aparece primero correcto y luego se deforma para mostrar el error. Al pasar el cursor, tocarlo o activarlo con el teclado vuelve al logo correcto para comparar.
+- **Patrones**: la trama técnica tiene una onda de brillo diagonal y el ritmo alternado se desplaza en filas opuestas. Solo se animan mientras están en pantalla.
+- **Interacciones**: transiciones al cambiar la versión del logo, el fondo del contraste o el color base de los tonos, una confirmación «Copiado» sobre cada color, deslizamiento direccional en el visor e indicador de sección que se mueve en la navegación.
+- **Volver al inicio**: el botón muestra un anillo con el progreso de lectura.
+
+El isotipo nunca se rota ni se deforma en las animaciones decorativas, para no contradecir las reglas del propio manual. Si el sistema tiene activado «Reducir movimiento» (`prefers-reduced-motion`), todo el contenido se muestra directamente, sin animaciones ni parallax.
+
 ## Publicar en GitHub Pages
 
 1. Creá un repositorio en GitHub (por ejemplo, `crisger-manual`).
