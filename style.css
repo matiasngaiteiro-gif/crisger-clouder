@@ -692,10 +692,30 @@ input[type="range"] { flex: 1; min-width: 0; height: 32px; accent-color: var(--o
 .doc-card { align-content: space-between; }
 @media (max-width: 900px) {
   .tpl-card, .sig-card { grid-template-columns: minmax(0, 1fr); }
-  .tpl-preview { position: static; min-height: 0; }
+  .tpl-preview { position: static; min-height: 0; order: -1; }
+  .tpl-step { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .tpl-step-n { display: none; }
   .tpl-canvas { max-height: 420px; }
 }
 @media (max-width: 480px) { .sig-grid { grid-template-columns: minmax(0, 1fr); } }
+
+/* Generador avanzado */
+.tpl-step { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 14px; padding-top: 16px; border-top: 1px solid var(--line); }
+.tpl-step-n { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--black); color: var(--white); font-weight: 700; font-size: 14px; }
+.tpl-step-body { display: grid; gap: 14px; min-width: 0; }
+.tpl-step-title { font-weight: 600; font-size: 16px; padding-top: 4px; }
+.tpl-upload { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.tpl-thumbs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.tpl-thumb { padding: 0; border: 2px solid transparent; border-radius: var(--radius); overflow: hidden; background: none; aspect-ratio: 3 / 2; transition: border-color .2s, transform .2s var(--ease); }
+.tpl-thumb:hover { border-color: var(--orange); transform: translateY(-2px); }
+.tpl-thumb[aria-pressed="true"] { border-color: var(--black); box-shadow: 0 0 0 2px var(--orange); }
+.tpl-preview { gap: 16px; align-content: center; }
+.tpl-quick { justify-self: center; }
+.tpl-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tpl-imgtools { display: grid; gap: 12px; padding: 14px; border-radius: var(--radius); background: var(--warm); }
+.tpl-imgname { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.tpl-canvas.is-draggable { cursor: grab; touch-action: none; }
+.tpl-canvas.is-draggable:active { cursor: grabbing; }
 
 /* ---------- Modo presentación ---------- */
 .presenter {

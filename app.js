@@ -38,7 +38,7 @@ const icon = path => {
 const ICONS = {
   prev: 'M15 5l-7 7 7 7', next: 'M9 5l7 7-7 7', copy: 'M9 9h10v10H9zM5 15V5h10',
   expand: 'M4 10V4h6M20 14v6h-6M4 4l6 6M20 20l-6-6', down: 'M12 5v14M5 12l7 7 7-7',
-  download: 'M12 4v11M7 10l5 5 5-5M5 20h14'
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14', upload: 'M12 20V9M7 14l5-5 5 5M5 4h14'
 };
 
 /* ---------- Estado ---------- */
@@ -777,16 +777,24 @@ const TPL_FORMATS = {
   video: { label: 'Videollamada', size: '1920 × 1080', w: 1920, h: 1080 }
 };
 const TPL_STYLES = {
-  negro: { label: 'Negro', bg: '#000000', glow: true, title: '#FFFFFF', text: '#CCCCCC', tag: '#FE5000', logo: 'oscuro', iso: 'naranja', isoAlpha: 0.08 },
-  naranja: { label: 'Naranja', bg: '#FE5000', glow: false, title: '#FFFFFF', text: '#000000', tag: '#000000', logo: 'naranja', iso: 'naranja', isoAlpha: 0.16 },
-  claro: { label: 'Claro', bg: '#F2F2F2', glow: false, title: '#000000', text: '#44464B', tag: '#000000', logo: 'claro', iso: 'claro', isoAlpha: 0.09 }
+  negro: { label: 'Negro', bg: '#000000', glow: true, title: '#FFFFFF', text: '#CCCCCC', tag: '#FE5000', bar: '#FE5000', logo: 'oscuro', iso: 'naranja', isoAlpha: 0.08, cta: '#FE5000', ctaInk: '#000000', shade: '0,0,0' },
+  naranja: { label: 'Naranja', bg: '#FE5000', glow: false, title: '#FFFFFF', text: '#000000', tag: '#000000', bar: '#000000', logo: 'naranja', iso: 'naranja', isoAlpha: 0.16, cta: '#000000', ctaInk: '#FFFFFF', shade: '254,80,0' },
+  claro: { label: 'Claro', bg: '#F2F2F2', glow: false, title: '#000000', text: '#44464B', tag: '#000000', bar: '#FE5000', logo: 'claro', iso: 'claro', isoAlpha: 0.09, cta: '#FE5000', ctaInk: '#000000', shade: '242,242,242' }
 };
-const tpl = { format: 'post', style: 'negro', tag: 'Seguridad Industrial', title: 'La seguridad se hace visible.', text: 'Elementos de protección personal, indumentaria laboral y asesoramiento técnico en San Nicolás de los Arroyos.', pattern: true };
+const TPL_LAYOUTS = [['clasica', 'Clásica'], ['centrada', 'Centrada'], ['panel', 'Panel']];
+const tpl = {
+  format: 'post', style: 'negro', layout: 'clasica',
+  tag: 'Seguridad Industrial', title: 'La seguridad se hace visible.',
+  text: 'Elementos de protección personal, indumentaria laboral y asesoramiento técnico en San Nicolás de los Arroyos.',
+  cta: '', pattern: true,
+  image: null, imageName: '', zoom: 1, ox: 0, oy: 0, shade: 60
+};
 const imgCache = new Map();
 function loadImg(src) {
   if (!imgCache.has(src)) imgCache.set(src, new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }));
   return imgCache.get(src);
 }
+const setLS = (ctx, px) => { if ('letterSpacing' in ctx) ctx.letterSpacing = `${px.toFixed(1)}px`; };
 function wrapLines(ctx, text, maxW) {
   const words = String(text || '').trim().split(/\s+/).filter(Boolean);
   const lines = []; let line = '';
@@ -800,91 +808,169 @@ function wrapLines(ctx, text, maxW) {
 function fitTitle(ctx, text, maxW, size, maxLines, minSize) {
   let s = size, lines;
   do {
-    ctx.font = `700 ${s}px "Bai Jamjuree"`;
-    if ('letterSpacing' in ctx) ctx.letterSpacing = `${(-0.03 * s).toFixed(1)}px`;
+    ctx.font = `700 ${s}px "Bai Jamjuree"`; setLS(ctx, -0.03 * s);
     lines = wrapLines(ctx, text, maxW);
     s -= 4;
   } while ((lines.length > maxLines || lines.some(l => ctx.measureText(l).width > maxW)) && s > minSize);
   return { lines, size: s + 4 };
 }
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+}
+/* Bloque de texto: etiqueta, titular, texto y botón, anclado arriba, abajo o al centro. */
+function textBlock(ctx, S, o) {
+  const parts = [];
+  if (tpl.tag) parts.push({ type: 'tag', h: o.tagSize, gap: o.tagSize * 0.95 });
+  if (tpl.title) { const t = fitTitle(ctx, tpl.title, o.w, o.titleSize, o.maxLines, o.titleSize * 0.5); parts.push({ type: 'title', h: t.lines.length * t.size, t, gap: o.titleSize * 0.34 }); }
+  if (tpl.text && o.textLines) {
+    ctx.font = `400 ${o.textSize}px Inter`; setLS(ctx, 0);
+    const lines = wrapLines(ctx, tpl.text, o.w).slice(0, o.textLines);
+    parts.push({ type: 'text', h: lines.length * o.textSize * 1.45, lines, gap: o.textSize * 1.1 });
+  }
+  if (tpl.cta && o.ctaSize) parts.push({ type: 'cta', h: o.ctaSize * 2.3, gap: 0 });
+  const total = parts.reduce((a, p, i) => a + p.h + (i < parts.length - 1 ? p.gap : 0), 0);
+  let y = o.bottom !== undefined ? o.bottom - total : o.center !== undefined ? o.center - total / 2 : o.top;
+  const ax = o.align === 'center' ? o.x + o.w / 2 : o.align === 'right' ? o.x + o.w : o.x;
+  ctx.textBaseline = 'alphabetic';
+  for (const p of parts) {
+    if (p.type === 'tag') {
+      ctx.font = `600 ${o.tagSize}px "Bai Jamjuree"`; setLS(ctx, 0);
+      const tw = ctx.measureText(tpl.tag).width, barW = o.tagSize * 1.3, gap = o.tagSize * 0.5, full = barW + gap + tw;
+      const sx = o.align === 'center' ? ax - full / 2 : o.align === 'right' ? ax - full : ax;
+      ctx.fillStyle = S.bar; ctx.fillRect(sx, y + o.tagSize * 0.44, barW, Math.max(3, o.tagSize * 0.14));
+      ctx.fillStyle = S.tag; ctx.textAlign = 'left'; ctx.fillText(tpl.tag, sx + barW + gap, y + o.tagSize * 0.8);
+    } else if (p.type === 'title') {
+      ctx.font = `700 ${p.t.size}px "Bai Jamjuree"`; setLS(ctx, -0.03 * p.t.size);
+      ctx.fillStyle = S.title; ctx.textAlign = o.align;
+      p.t.lines.forEach((l, i) => ctx.fillText(l, ax, y + p.t.size * 0.8 + i * p.t.size));
+    } else if (p.type === 'text') {
+      ctx.font = `400 ${o.textSize}px Inter`; setLS(ctx, 0);
+      ctx.fillStyle = S.text; ctx.textAlign = o.align;
+      p.lines.forEach((l, i) => ctx.fillText(l, ax, y + o.textSize * 1.05 + i * o.textSize * 1.45));
+    } else if (p.type === 'cta') {
+      ctx.font = `600 ${o.ctaSize}px "Bai Jamjuree"`; setLS(ctx, 0);
+      const tw = ctx.measureText(tpl.cta).width, bw = tw + o.ctaSize * 2.2, bh = o.ctaSize * 2.3;
+      const bx = o.align === 'center' ? ax - bw / 2 : o.align === 'right' ? ax - bw : ax;
+      ctx.fillStyle = S.cta; roundRect(ctx, bx, y, bw, bh, bh / 2); ctx.fill();
+      ctx.fillStyle = S.ctaInk; ctx.textAlign = 'center'; ctx.fillText(tpl.cta, bx + bw / 2, y + bh / 2 + o.ctaSize * 0.36);
+    }
+    y += p.h + p.gap;
+  }
+  ctx.textAlign = 'left'; setLS(ctx, 0);
+}
+function drawCover(ctx, img, x, y, w, h) {
+  const scale = Math.max(w / img.width, h / img.height) * tpl.zoom;
+  const dw = img.width * scale, dh = img.height * scale;
+  let dx = x + (w - dw) / 2 + tpl.ox * w, dy = y + (h - dh) / 2 + tpl.oy * h;
+  dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.drawImage(img, dx, dy, dw, dh); ctx.restore();
+}
+function drawPattern(ctx, iso, S, W, H, region) {
+  const { x, y, w, h } = region;
+  const t = Math.min(w, h) * (tpl.format === 'banner' ? 0.3 : 0.1), th = t * iso.height / iso.width, gap = t * 0.1;
+  const maxD = Math.hypot(w, h) * (tpl.format === 'banner' ? 0.45 : 0.62);
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+  for (let yy = y + h - th; yy > y - th; yy -= th + gap) for (let xx = x + w - t; xx > x - t; xx -= t + gap) {
+    const a = S.isoAlpha * Math.max(0, 1 - Math.hypot(x + w - xx, y + h - yy) / maxD);
+    if (a > 0.004) { ctx.globalAlpha = a; ctx.drawImage(iso, xx, yy, t, th); }
+  }
+  ctx.restore(); ctx.globalAlpha = 1;
+}
+/* Área de la imagen y del panel según estructura y formato */
+function panelGeometry(W, H) {
+  if (tpl.layout !== 'panel') return null;
+  if (tpl.format === 'story') return { panel: { x: 0, y: H * 0.56, w: W, h: H * 0.44 }, image: { x: 0, y: 0, w: W, h: H * 0.56 } };
+  if (tpl.format === 'banner') return { panel: { x: W * 0.52, y: 0, w: W * 0.48, h: H }, image: { x: 0, y: 0, w: W * 0.52, h: H } };
+  const pw = tpl.format === 'post' ? W * 0.5 : W * 0.42;
+  return { panel: { x: 0, y: 0, w: pw, h: H }, image: { x: pw, y: 0, w: W - pw, h: H } };
+}
 async function drawTemplate(canvas) {
-  const F = TPL_FORMATS[tpl.format], S = TPL_STYLES[tpl.style];
+  const F = TPL_FORMATS[tpl.format];
+  let S = TPL_STYLES[tpl.style];
   const W = F.w, H = F.h;
   canvas.width = W; canvas.height = H;
   const ctx = canvas.getContext('2d');
   await Promise.all([document.fonts.load('700 40px "Bai Jamjuree"'), document.fonts.load('600 40px "Bai Jamjuree"'), document.fonts.load('400 20px Inter')]).catch(() => {});
+  // Con imagen de fondo a pantalla completa, los textos se ajustan para leerse sobre el velo
+  if (tpl.image && tpl.layout !== 'panel') {
+    if (tpl.style === 'negro') S = { ...S, text: '#E6E6E6', tag: '#FFFFFF' };
+    if (tpl.style === 'naranja') S = { ...S, title: '#FFFFFF', text: '#FFFFFF', tag: '#FFFFFF', bar: '#FFFFFF', cta: '#FFFFFF', ctaInk: '#000000' };
+    if (tpl.style === 'claro') S = { ...S, text: '#000000' };
+  }
   const [logo, iso] = await Promise.all([loadImg(logoAsset('principal', S.logo)), loadImg(logoAsset('isotipo', S.iso))]);
-  // Fondo
+  const img = tpl.image;
+  const geo = panelGeometry(W, H);
+  const u = Math.min(W, H) / 1080;
+  // 1. Fondo de color
   ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H);
-  if (S.glow) {
+  // 2. Imagen (toda la pieza, o solo el área de imagen en la estructura Panel)
+  const imgArea = geo ? geo.image : { x: 0, y: 0, w: W, h: H };
+  if (img) {
+    drawCover(ctx, img, imgArea.x, imgArea.y, imgArea.w, imgArea.h);
+    if (!geo) {
+      // Velo para asegurar la lectura del texto, con el color del fondo elegido
+      const a = tpl.shade / 100;
+      if (tpl.style === 'naranja') {
+        ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(254,80,0,${0.35 + a * 0.55})`; ctx.fillRect(0, 0, W, H); ctx.restore();
+      }
+      const tint = tpl.style === 'naranja' ? '0,0,0' : S.shade;
+      if (tpl.layout === 'centrada') {
+        ctx.fillStyle = `rgba(${tint},${a * 0.7})`; ctx.fillRect(0, 0, W, H);
+        const r = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.55);
+        r.addColorStop(0, `rgba(${tint},${Math.min(0.9, a * 1.1)})`); r.addColorStop(1, `rgba(${tint},0)`);
+        ctx.fillStyle = r; ctx.fillRect(0, 0, W, H);
+      } else {
+        const g = tpl.format === 'banner' ? ctx.createLinearGradient(W, 0, W * 0.3, 0) : ctx.createLinearGradient(0, H, 0, H * 0.25);
+        g.addColorStop(0, `rgba(${tint},${Math.min(0.95, a * 1.25)})`); g.addColorStop(1, `rgba(${tint},${a * 0.15})`);
+        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      }
+    }
+  } else if (S.glow && !geo) {
     const g = ctx.createRadialGradient(W, H, 0, W, H, Math.max(W, H) * 0.95);
     g.addColorStop(0, 'rgba(254,80,0,0.62)'); g.addColorStop(0.38, 'rgba(254,80,0,0.2)'); g.addColorStop(0.7, 'rgba(254,80,0,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
-  // Trama del isotipo que se desvanece desde la esquina inferior derecha
-  if (tpl.pattern) {
-    const t = Math.min(W, H) * (tpl.format === 'banner' ? 0.3 : 0.1);
-    const th = t * iso.height / iso.width, gap = t * 0.1;
-    const maxD = Math.hypot(W, H) * (tpl.format === 'banner' ? 0.45 : 0.62);
-    for (let y = H - th; y > -th; y -= th + gap) for (let x = W - t; x > -t; x -= t + gap) {
-      const a = S.isoAlpha * Math.max(0, 1 - Math.hypot(W - x, H - y) / maxD);
-      if (a <= 0.004) continue;
-      ctx.globalAlpha = a; ctx.drawImage(iso, x, y, t, th);
+  // 3. Panel sólido
+  if (geo) {
+    const p = geo.panel;
+    ctx.fillStyle = S.bg; ctx.fillRect(p.x, p.y, p.w, p.h);
+    if (!img) { // sin imagen, el área de imagen muestra la trama sobre el color opuesto
+      ctx.fillStyle = tpl.style === 'negro' ? '#FE5000' : '#000000'; ctx.fillRect(imgArea.x, imgArea.y, imgArea.w, imgArea.h);
     }
-    ctx.globalAlpha = 1;
   }
-  const u = Math.min(W, H) / 1080;
-  const drawLogo = (x, y, height) => { const w = height * logo.width / logo.height; ctx.drawImage(logo, x, y, w, height); return w; };
-  const drawTag = (x, y, size, align = 'left') => {
-    if (!tpl.tag) return 0;
-    ctx.font = `600 ${size}px "Bai Jamjuree"`; if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-    ctx.textBaseline = 'alphabetic'; ctx.textAlign = align;
-    const barW = size * 1.3, barH = Math.max(3, size * 0.14);
-    const tw = ctx.measureText(tpl.tag).width;
-    const bx = align === 'right' ? x - tw - barW - size * 0.5 : x;
-    ctx.fillStyle = tpl.style === 'naranja' ? '#000000' : '#FE5000';
-    ctx.fillRect(bx, y - size * 0.36, barW, barH);
-    ctx.fillStyle = S.tag === '#FE5000' ? '#FE5000' : S.tag;
-    ctx.fillText(tpl.tag, align === 'right' ? x : x + barW + size * 0.5, y);
-    return size * 1.9;
-  };
-  const drawBlock = (x, bottom, maxW, titleSize, maxLines, textSize, textLines, align = 'left') => {
-    // Calcula de abajo hacia arriba: texto, titular, etiqueta
-    ctx.textAlign = align; ctx.textBaseline = 'alphabetic';
-    let y = bottom;
-    const tx = align === 'right' ? x + maxW : x;
-    if (tpl.text && textLines) {
-      ctx.font = `400 ${textSize}px Inter`; if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
-      const lines = wrapLines(ctx, tpl.text, maxW).slice(0, textLines);
-      const lh = textSize * 1.45;
-      ctx.fillStyle = S.text;
-      lines.slice().reverse().forEach((l, i) => ctx.fillText(l, tx, y - i * lh));
-      y -= lines.length * lh + textSize * 0.9;
+  // 4. Trama del isotipo
+  // Sobre una foto la trama recarga la pieza: solo se aplica en el panel o en fondos lisos
+  if (tpl.pattern && (geo || !img)) drawPattern(ctx, iso, S, W, H, geo ? geo.panel : { x: 0, y: 0, w: W, h: H });
+  // 5. Logo y textos
+  const logoW = hgt => hgt * logo.width / logo.height;
+  const drawLogo = (x, y, hgt) => ctx.drawImage(logo, x, y, logoW(hgt), hgt);
+  const L = tpl.layout, f = tpl.format;
+  if (L === 'panel') {
+    const p = geo.panel, m = (f === 'banner' ? 40 : 72 * u), lh = f === 'banner' ? 30 : 44 * u;
+    if (f === 'banner') {
+      drawLogo(p.x + p.w - m - logoW(lh), p.y + p.h - m - lh, lh);
+      textBlock(ctx, S, { x: p.x + m, w: p.w - 2 * m, align: 'right', top: m, titleSize: 44, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    } else {
+      drawLogo(p.x + m, p.y + m, lh);
+      textBlock(ctx, S, { x: p.x + m, w: p.w - 2 * m, align: 'left', bottom: p.y + p.h - m, titleSize: (f === 'story' ? 96 : f === 'video' ? 64 : 72) * (f === 'video' ? 1 : u), maxLines: 4, tagSize: (f === 'video' ? 22 : 26 * u), textSize: f === 'video' ? 24 : 28 * u, textLines: f === 'story' ? 3 : 4, ctaSize: f === 'video' ? 22 : 26 * u });
     }
-    if (tpl.title) {
-      const { lines, size } = fitTitle(ctx, tpl.title, maxW, titleSize, maxLines, titleSize * 0.5);
-      const lh = size * 1.0;
-      ctx.fillStyle = S.title;
-      lines.slice().reverse().forEach((l, i) => ctx.fillText(l, tx, y - i * lh));
-      y -= (lines.length - 1) * lh + size * 1.05;
+  } else if (L === 'centrada') {
+    const lh = f === 'banner' ? 30 : (f === 'video' ? 46 : 50 * u);
+    if (f === 'banner') {
+      drawLogo(W - 40 - logoW(lh), H - 40 - lh, lh);
+      textBlock(ctx, S, { x: W * 0.2, w: W * 0.6, align: 'center', center: H / 2 - 10, titleSize: 56, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    } else {
+      drawLogo(W / 2 - logoW(lh) / 2, (f === 'story' ? 150 : 80) * (f === 'video' ? 1 : u), lh);
+      const m = (f === 'video' ? 260 : 110 * u);
+      textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'center', center: H / 2 + (f === 'story' ? 40 : 30) * u, titleSize: (f === 'story' ? 120 : f === 'video' ? 84 : 100) * (f === 'video' ? 1 : u), maxLines: 4, tagSize: f === 'video' ? 26 : 30 * u, textSize: f === 'video' ? 28 : 32 * u, textLines: 3, ctaSize: f === 'video' ? 26 : 30 * u });
     }
-    drawTag(tx, y, Math.round(titleSize * 0.3), align);
-  };
-  if (tpl.format === 'post') {
-    const m = 88 * u; drawLogo(m, m, 46 * u);
-    drawBlock(m, H - m, W - 2 * m, 96 * u, 4, 32 * u, 3);
-  } else if (tpl.format === 'story') {
-    const m = 96 * u; drawLogo(m, 150 * u, 54 * u);
-    drawBlock(m, H - 300 * u, W - 2 * m, 116 * u, 5, 38 * u, 4);
-  } else if (tpl.format === 'banner') {
-    const m = 56;
-    const lw = 34 * logo.width / logo.height; drawLogo(W - m - lw, H - m - 34, 34);
-    drawBlock(W * 0.4, H - m - 34 - 42, W * 0.6 - m, 64, 2, 0, 0, 'right');
-  } else {
-    const m = 72; drawLogo(m, m, 48);
-    drawBlock(m, H - m, W * 0.42, 60, 2, 24, 2);
+  } else { // clásica
+    if (f === 'post') { const m = 88 * u; drawLogo(m, m, 46 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - m, titleSize: 96 * u, maxLines: 4, tagSize: 29 * u, textSize: 32 * u, textLines: 3, ctaSize: 28 * u }); }
+    else if (f === 'story') { const m = 96 * u; drawLogo(m, 150 * u, 54 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - 300 * u, titleSize: 116 * u, maxLines: 5, tagSize: 35 * u, textSize: 38 * u, textLines: 4, ctaSize: 34 * u }); }
+    else if (f === 'banner') { const m = 56; drawLogo(W - m - logoW(34), H - m - 34, 34); textBlock(ctx, S, { x: W * 0.4, w: W * 0.6 - m, align: 'right', bottom: H - m - 34 - 34, titleSize: 64, maxLines: 2, tagSize: 19, textSize: 0, textLines: 0, ctaSize: 0 }); }
+    else { const m = 72; drawLogo(m, m, 48); textBlock(ctx, S, { x: m, w: W * 0.42, align: 'left', bottom: H - m, titleSize: 60, maxLines: 2, tagSize: 18, textSize: 24, textLines: 2, ctaSize: 22 }); }
   }
-  ctx.textAlign = 'left';
 }
 const escapeHTML = v => String(v || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function signatureHTML(f) {
@@ -906,30 +992,81 @@ function renderTemplates() {
   const canvas = h('canvas', { class: 'tpl-canvas', role: 'img', 'aria-label': 'Vista previa de la pieza' });
   const status = h('span', { class: 'tpl-size' });
   let timer = 0;
-  const redraw = () => { clearTimeout(timer); timer = setTimeout(async () => { await drawTemplate(canvas); const F = TPL_FORMATS[tpl.format]; status.textContent = `${F.label} · ${F.size} px`; canvas.parentElement?.setAttribute('data-format', tpl.format); }, 60); };
-  const input = (label, key, multiline) => {
+  const redraw = (delay = 60) => { clearTimeout(timer); timer = setTimeout(async () => {
+    await drawTemplate(canvas);
+    const F = TPL_FORMATS[tpl.format]; status.textContent = `${F.label} · ${F.size} px`;
+    canvas.classList.toggle('is-draggable', !!tpl.image);
+    imgTools.hidden = !tpl.image;
+  }, delay); };
+  const input = (label, key, multiline, placeholder = '') => {
     const id = `tpl-${key}`;
-    const el = h(multiline ? 'textarea' : 'input', { id, rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : 70 });
+    const el = h(multiline ? 'textarea' : 'input', { id, rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : 70, placeholder });
     el.value = tpl[key];
     el.addEventListener('input', () => { tpl[key] = el.value; redraw(); });
     return h('div', { class: 'tpl-field' }, [h('label', { for: id, text: label }), el]);
   };
   const patternToggle = h('input', { type: 'checkbox', id: 'tpl-pattern', checked: tpl.pattern });
   patternToggle.addEventListener('change', () => { tpl.pattern = patternToggle.checked; redraw(); });
-  const download = h('button', { type: 'button', class: 'btn btn-primary', onclick: () => canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob); const a = h('a', { href: url, download: `crisger-${tpl.format}-${tpl.style}.png` });
+  // Imagen de fondo: subir una propia o usar una maqueta del manual
+  const setImage = async (src, name) => {
+    $$('.tpl-thumb', thumbs).forEach(t => t.setAttribute('aria-pressed', String(t.title === name)));
+    try { tpl.image = await loadImg(src); tpl.imageName = name; tpl.zoom = 1; tpl.ox = 0; tpl.oy = 0; zoom.value = 100; zoomOut.textContent = '100%'; imgName.textContent = name; redraw(0); }
+    catch { toast('No se pudo cargar la imagen'); }
+  };
+  const upload = h('input', { type: 'file', accept: 'image/*', class: 'sr-only' });
+  upload.addEventListener('change', () => { const file = upload.files?.[0]; if (file) setImage(URL.createObjectURL(file), file.name); upload.value = ''; });
+  const thumbs = h('div', { class: 'tpl-thumbs', role: 'group', 'aria-label': 'Usar una maqueta del manual como fondo' },
+    data.sections.flatMap(sx => sx.modules).filter(m => m.kind === 'showcase' && m.media).map(m =>
+      h('button', { type: 'button', class: 'tpl-thumb', 'aria-pressed': 'false', title: m.title, 'aria-label': `Usar ${m.title} como fondo`, onclick: () => setImage(m.media, m.title) }, h('img', { src: m.media, alt: '', loading: 'lazy' }))));
+  const imgName = h('span', { class: 'tpl-size' });
+  const zoom = h('input', { type: 'range', min: 100, max: 250, value: 100, id: 'tpl-zoom' });
+  const zoomOut = h('output', { for: 'tpl-zoom', text: '100%' });
+  zoom.addEventListener('input', () => { tpl.zoom = zoom.value / 100; zoomOut.textContent = `${zoom.value}%`; redraw(0); });
+  const shade = h('input', { type: 'range', min: 0, max: 90, value: tpl.shade, id: 'tpl-shade' });
+  const shadeOut = h('output', { for: 'tpl-shade', text: `${tpl.shade}%` });
+  shade.addEventListener('input', () => { tpl.shade = Number(shade.value); shadeOut.textContent = `${shade.value}%`; redraw(0); });
+  const imgTools = h('div', { class: 'tpl-imgtools', hidden: true }, [
+    h('div', { class: 'tpl-imgname' }, [imgName, h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: 'Quitar imagen', onclick: () => { tpl.image = null; tpl.imageName = ''; $$('.tpl-thumb', thumbs).forEach(t => t.setAttribute('aria-pressed', 'false')); redraw(0); } })]),
+    h('div', { class: 'control' }, [h('label', { class: 'control-label', for: 'tpl-zoom', text: 'Zoom' }), h('div', { class: 'range-row' }, [zoom, zoomOut])]),
+    h('div', { class: 'control' }, [h('label', { class: 'control-label', for: 'tpl-shade', text: 'Velo para el texto' }), h('div', { class: 'range-row' }, [shade, shadeOut])]),
+    h('p', { class: 'tpl-help', text: 'Arrastrá la imagen en la vista previa para encuadrarla.' })
+  ]);
+  // Arrastrar para encuadrar
+  let drag = null;
+  canvas.addEventListener('pointerdown', e => { if (!tpl.image) return; drag = { x: e.clientX, y: e.clientY, ox: tpl.ox, oy: tpl.oy }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointermove', e => {
+    if (!drag) return;
+    const r = canvas.getBoundingClientRect();
+    tpl.ox = drag.ox + (e.clientX - drag.x) / r.width; tpl.oy = drag.oy + (e.clientY - drag.y) / r.height;
+    tpl.ox = Math.max(-1, Math.min(1, tpl.ox)); tpl.oy = Math.max(-1, Math.min(1, tpl.oy));
+    redraw(0);
+  });
+  ['pointerup', 'pointercancel'].forEach(ev => canvas.addEventListener(ev, () => { drag = null; }));
+  const savePNG = () => canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob); const a = h('a', { href: url, download: `crisger-${tpl.format}-${tpl.layout}-${tpl.style}.png` });
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500); toast('Pieza descargada');
-  }, 'image/png') }, [icon(ICONS.download), 'Descargar PNG']);
+  }, 'image/png');
+  const download = h('button', { type: 'button', class: 'btn btn-primary', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG']);
+  const step = (n, title, children) => h('div', { class: 'tpl-step' }, [h('span', { class: 'tpl-step-n', text: n }), h('div', { class: 'tpl-step-body' }, [h('strong', { class: 'tpl-step-title', text: title }), ...children])]);
   wrap.append(h('article', { class: 'kit-card tpl-card' }, [
     h('div', { class: 'tpl-controls' }, [
       h('h4', { text: 'Piezas para redes y videollamadas' }),
-      segmented('Formato', Object.entries(TPL_FORMATS).map(([k, f]) => [k, f.label]), tpl.format, v => { tpl.format = v; redraw(); }),
-      segmented('Fondo', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), tpl.style, v => { tpl.style = v; redraw(); }),
-      input('Etiqueta', 'tag'), input('Titular', 'title'), input('Texto', 'text', true),
-      h('label', { class: 'tpl-check', for: 'tpl-pattern' }, [patternToggle, 'Trama del isotipo']),
+      step('1', 'Formato y estructura', [
+        segmented('Formato', Object.entries(TPL_FORMATS).map(([k, f]) => [k, f.label]), tpl.format, v => { tpl.format = v; redraw(0); }),
+        segmented('Estructura', TPL_LAYOUTS, tpl.layout, v => { tpl.layout = v; redraw(0); }),
+        segmented('Color', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), tpl.style, v => { tpl.style = v; redraw(0); })
+      ]),
+      step('2', 'Imagen de fondo (opcional)', [
+        h('div', { class: 'tpl-upload' }, [h('label', { class: 'btn btn-small btn-outline file-button' }, [icon(ICONS.upload), 'Subir imagen', upload]), h('span', { class: 'tpl-help', text: 'o elegí una maqueta:' })]),
+        thumbs, imgTools
+      ]),
+      step('3', 'Textos', [
+        input('Etiqueta', 'tag'), input('Titular', 'title'), input('Texto', 'text', true), input('Botón (opcional)', 'cta', false, 'Por ejemplo: Consultanos'),
+        h('label', { class: 'tpl-check', for: 'tpl-pattern' }, [patternToggle, 'Trama del isotipo'])
+      ]),
       h('div', { class: 'tpl-actions' }, [download, status])
     ]),
-    h('div', { class: 'tpl-preview' }, canvas)
+    h('div', { class: 'tpl-preview' }, [canvas, h('button', { type: 'button', class: 'btn btn-small btn-primary tpl-quick', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG'])])
   ]));
   // Firma de correo
   let sig = { name: '', role: '', phone: '', mail: '' };

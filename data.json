@@ -204,17 +204,8 @@
       "id": "aplicaciones",
       "kicker": "06 · Aplicaciones",
       "title": "La marca en acción",
-      "lead": "De la fachada al vehículo de reparto: así se comporta el sistema en espacios, prendas, soportes y medios.",
+      "lead": "La identidad se aplica con los mismos criterios en cada soporte. En pantalla, los fondos negros, blancos o grises sostienen la lectura y el naranja actúa como acento; en indumentaria, packaging, señalética y espacios, el naranja puede ganar protagonismo, siempre dentro de la paleta y con una lectura clara.",
       "modules": [
-        {
-          "id": "digital",
-          "title": "En pantalla y en papel",
-          "body": "En sitios y aplicaciones, los fondos negros, blancos o grises sostienen la experiencia y el naranja actúa como acento. En redes sociales y material impreso, las proporciones pueden variar, siempre dentro de la paleta y con una lectura clara.",
-          "media": "",
-          "note": "",
-          "items": [],
-          "kind": "standard"
-        },
         {
           "id": "fachada",
           "title": "Fachada",
@@ -318,7 +309,7 @@
       ],
       "navLabel": "Aplicaciones",
       "theme": "dark",
-      "note": "Las imágenes son maquetas conceptuales creadas para ilustrar el sistema de marca. No son fotografías de productos reales."
+      "note": "Las imágenes son maquetas conceptuales creadas para ilustrar el sistema de marca; no son fotografías de productos reales. Filtrá por categoría y tocá una imagen para ampliarla."
     }
   ],
   "palette": [
