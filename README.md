@@ -11,6 +11,7 @@ app.js          Render desde data.json, interacciones y editor
 data.json       Todo el contenido editable del manual
 fonts/          Bai Jamjuree (Regular, SemiBold, Bold) e Inter
 media/          Logos en SVG (5 versiones × 3 fondos), PNG originales, maquetas y referencias
+  descargas/    PNG en alta resolución y ZIP del paquete de logos para el kit de marca
 README.md
 ```
 
@@ -19,12 +20,24 @@ README.md
 1. **Portada**: logo original, versión, título, texto introductorio, ubicación y enlace para explorar.
 2. **Esencia**: historia de CRISGER, maqueta de la fachada y los conceptos Proteger, Responder y Avanzar.
 3. **Logo**: un único módulo con las versiones principal, vertical, compacta, logotipo e isotipo. Se puede alternar entre fondo claro, oscuro y naranja, ajustar la escala y descargar el archivo mostrado. También incluye un diagrama del espacio de protección y nueve usos incorrectos generados en CSS sobre el logo real.
-4. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
-5. **Colores**: paleta en mosaico con HEX, RGB y CMYK copiables, dos degradados de naranja a negro, explorador de tonos y matices y comparador de contraste (claro, oscuro, naranja y degradado) con relación de contraste calculada.
-6. **Tipografía**: el lettering del logo mediante su archivo original, Bai Jamjuree en Regular, SemiBold y Bold, Inter para párrafos y una jerarquía H1 · H2 · H3 · destacado · párrafo.
+4. **Colores**: paleta en mosaico con HEX, RGB y CMYK copiables, dos degradados de naranja a negro, explorador de tonos y matices y comparador de contraste (claro, oscuro, naranja y degradado) con relación de contraste calculada.
+5. **Tipografía**: el lettering del logo mediante su archivo original, Bai Jamjuree en Regular, SemiBold y Bold, Inter para párrafos y una jerarquía H1 · H2 · H3 · destacado · párrafo.
+6. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
 7. **Aplicaciones**: galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
+8. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter.
 
 Algunas maquetas también aparecen dentro de su sección: la fachada en Esencia, el vehículo en Logo, el packaging en Recursos, la señalización en Colores y el catálogo en Tipografía.
+
+## Modo presentación
+
+El botón **Presentar** de la cabecera pone el manual en pantalla completa y lo recorre bloque por bloque, ideal para mostrarlo en una reunión:
+
+- **Avanzar**: flecha derecha, flecha abajo, barra espaciadora o Av Pág. En pantallas táctiles, deslizá hacia la izquierda.
+- **Retroceder**: flecha izquierda, flecha arriba o Re Pág. En pantallas táctiles, deslizá hacia la derecha.
+- **Ir al principio o al final**: Inicio y Fin.
+- **Salir**: Esc o el botón **Salir** de la barra inferior.
+
+La barra inferior muestra la sección actual y el avance (por ejemplo, «Colores · 12 / 28»).
 
 ## Animaciones
 
@@ -82,9 +95,11 @@ y abrí `http://localhost:8000`.
 
 ## Editar el contenido
 
-El botón **Editar contenido** está en el pie de página. Abre un panel con cinco pestañas:
+El botón **Editar contenido** está oculto para los visitantes. Para verlo, abrí el sitio agregando `?editar` al final de la dirección, por ejemplo `https://USUARIO.github.io/crisger-manual/?editar`. El botón aparece en el pie de página y queda recordado en ese navegador. Para ocultarlo de nuevo, abrí la dirección con `?editar=0`.
 
-- **Portada**: etiqueta y versión del manual, título, texto, ubicación, texto del enlace, nombre de marca, descriptor y texto de cierre.
+El editor abre un panel con cinco pestañas:
+
+- **Portada**: etiqueta y versión del manual, textos del kit de marca, título, texto, ubicación, texto del enlace, nombre de marca, descriptor y texto de cierre.
 - **Secciones**: nombre en la navegación, número y categoría, título, introducción, nota y color de fondo. Permite agregar, ordenar y eliminar secciones.
 - **Bloques**: título, texto, listas, notas, formato, categoría de galería e imagen (por ruta o subiendo un archivo). Permite agregar, duplicar, ordenar y eliminar bloques.
 - **Colores**: nombre, HEX, RGB y CMYK de cada color. Permite agregar, ordenar y eliminar colores. El primer color define el acento de la interfaz.

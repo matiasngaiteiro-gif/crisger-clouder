@@ -10,7 +10,7 @@
   <link rel="alternate icon" type="image/png" href="media/isotipo.png">
   <link rel="preload" href="fonts/bai-bold.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="fonts/inter-variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=2026-09-27-4">
+  <link rel="stylesheet" href="style.css?v=2026-09-27-5">
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -24,7 +24,13 @@
       <nav id="siteNav" class="site-nav" aria-label="Secciones del manual">
         <ul id="navList"></ul>
       </nav>
-      <span class="header-meta"><span id="navLabel">Manual de marca</span> <b id="navVersion"></b></span>
+      <div class="header-right">
+        <span class="header-meta"><span id="navLabel">Manual de marca</span> <b id="navVersion"></b></span>
+        <button id="presentBtn" class="present-btn" type="button" aria-label="Iniciar modo presentación" title="Modo presentación">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v11H3zM8 21h8M12 16v5"/><path d="M10 8.5v4l3.5-2z" fill="currentColor"/></svg>
+          <span>Presentar</span>
+        </button>
+      </div>
     </div>
   </header>
 
@@ -40,11 +46,18 @@
         <span id="footerVersion"></span>
         <span id="footerLocation"></span>
       </div>
-      <button id="editEntry" class="btn btn-outline footer-edit" type="button">
+      <button id="editEntry" class="btn btn-outline footer-edit" type="button" hidden>
         Editar contenido <span id="editBadge" class="edit-badge" hidden>Cambios locales</span>
       </button>
     </div>
   </footer>
+
+  <div id="presenter" class="presenter" hidden>
+    <span class="presenter-info"><b id="presenterLabel"></b><span id="presenterCount"></span></span>
+    <button id="presenterPrev" class="icon-btn" type="button" aria-label="Anterior"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <button id="presenterNext" class="icon-btn" type="button" aria-label="Siguiente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="presenterExit" class="btn btn-small btn-outline" type="button">Salir</button>
+  </div>
 
   <button id="backToTop" class="back-to-top" type="button" aria-label="Volver al inicio" title="Volver al inicio">
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -109,6 +122,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=2026-09-27-4" defer></script>
+  <script src="app.js?v=2026-09-27-5" defer></script>
 </body>
 </html>

@@ -88,41 +88,8 @@
       "note": ""
     },
     {
-      "id": "recursos",
-      "kicker": "03 · Recursos",
-      "title": "Un lenguaje propio",
-      "lead": "El isotipo también construye un lenguaje visual reconocible a través de patrones.",
-      "modules": [
-        {
-          "id": "patrones",
-          "title": "Patrones",
-          "body": "Dos composiciones construidas con el isotipo: una trama técnica y un ritmo alternado. Deslizá para ver cada patrón. Usalos como fondos o acentos sin comprometer la legibilidad del contenido.",
-          "media": "",
-          "note": "",
-          "items": [
-            "Trama técnica",
-            "Ritmo alternado"
-          ],
-          "kind": "patterns"
-        },
-        {
-          "id": "recursos-en-uso",
-          "title": "Packaging",
-          "body": "La combinación de negro y naranja destaca en depósito y distribución.",
-          "media": "media/mockup-packaging-logo.webp",
-          "note": "Maqueta conceptual",
-          "items": [],
-          "kind": "feature",
-          "category": "Packaging"
-        }
-      ],
-      "navLabel": "Recursos",
-      "theme": "dark",
-      "note": ""
-    },
-    {
       "id": "color",
-      "kicker": "04 · Color",
+      "kicker": "03 · Color",
       "title": "Energía con control",
       "lead": "Una paleta breve permite construir piezas intensas, sobrias y consistentes.",
       "modules": [
@@ -174,7 +141,7 @@
     },
     {
       "id": "tipografia",
-      "kicker": "05 · Tipografía",
+      "kicker": "04 · Tipografía",
       "title": "La voz visual",
       "lead": "Cada fuente tiene un papel definido. Los especímenes se componen directamente en la web con las tipografías de la marca.",
       "modules": [
@@ -237,6 +204,39 @@
       ],
       "navLabel": "Tipografía",
       "theme": "white",
+      "note": ""
+    },
+    {
+      "id": "recursos",
+      "kicker": "05 · Recursos",
+      "title": "Un lenguaje propio",
+      "lead": "El isotipo también construye un lenguaje visual reconocible a través de patrones.",
+      "modules": [
+        {
+          "id": "patrones",
+          "title": "Patrones",
+          "body": "Dos composiciones construidas con el isotipo: una trama técnica y un ritmo alternado. Deslizá para ver cada patrón. Usalos como fondos o acentos sin comprometer la legibilidad del contenido.",
+          "media": "",
+          "note": "",
+          "items": [
+            "Trama técnica",
+            "Ritmo alternado"
+          ],
+          "kind": "patterns"
+        },
+        {
+          "id": "recursos-en-uso",
+          "title": "Packaging",
+          "body": "La combinación de negro y naranja destaca en depósito y distribución.",
+          "media": "media/mockup-packaging-logo.webp",
+          "note": "Maqueta conceptual",
+          "items": [],
+          "kind": "feature",
+          "category": "Packaging"
+        }
+      ],
+      "navLabel": "Recursos",
+      "theme": "light",
       "note": ""
     },
     {
@@ -419,5 +419,12 @@
     }
   },
   "heroCta": "Explorar el manual",
-  "heroLabel": "Manual de marca"
+  "heroLabel": "Manual de marca",
+  "kit": {
+    "kicker": "Descargas",
+    "title": "Kit de marca",
+    "lead": "Los archivos listos para aplicar la identidad en web, impresos, señalética e indumentaria.",
+    "zip": "media/descargas/CRISGER-logos.zip",
+    "note": "Los logos se reconstruyeron en vector a partir de los archivos del manual. Para gran formato, conviene usar el vectorial original del diseñador."
+  }
 }

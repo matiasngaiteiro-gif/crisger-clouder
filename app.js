@@ -191,6 +191,7 @@ function normalize(x) {
   d.brand ||= 'CRISGER';
   d.heroLabel ||= 'Manual de marca';
   d.heroCta ||= 'Explorar el manual';
+  d.kit = { kicker: 'Descargas', title: 'Kit de marca', lead: '', zip: '', note: '', ...(d.kit || {}) };
   d.logos ||= {};
   for (const [v] of LOGO_VARIANTS) { d.logos[v] ||= {}; for (const [b] of LOGO_BGS) d.logos[v][b] ||= ''; }
   d.palette = d.palette.filter(c => c && typeof c === 'object').map(c => ({ name: c.name || 'Color', hex: isHex(c.hex) ? c.hex.toUpperCase() : '#888888', rgb: c.rgb || '', cmyk: c.cmyk || '' }));
@@ -228,7 +229,7 @@ function render() {
   activeId = null;
 
   const main = $('#main');
-  main.replaceChildren(renderHero(), ...data.sections.map((s, i) => renderSection(s, i)));
+  main.replaceChildren(renderHero(), ...data.sections.map((s, i) => renderSection(s, i)), renderKit());
   prepareReveals(main);
   measureHeader();
   updateActiveNav();
@@ -663,6 +664,159 @@ function renderGallery(items) {
   return wrap;
 }
 
+/* ---------- Kit de marca (descargas) ---------- */
+const fileName = src => String(src || '').split('/').pop();
+function pngFor(src) {
+  // Las exportaciones PNG en alta resolución viven en media/descargas/png con el mismo nombre que el SVG.
+  return /^media\/[^/]+\.svg$/.test(src) ? `media/descargas/png/${fileName(src).replace('.svg', '.png')}` : '';
+}
+function downloadBlob(content, name, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = h('a', { href: url, download: name });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+function paletteCSS() {
+  const slug = n => n.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const vars = data.palette.map(c => `  --crisger-${slug(c.name)}: ${c.hex}; /* RGB ${c.rgb} · CMYK ${c.cmyk} */`).join('\n');
+  const o = brandColor('#FE5000', 0), k = brandColor('#000000', 1);
+  return `/* ${data.brand} · Paleta de marca · ${data.version} */\n:root {\n${vars}\n  --crisger-degradado: linear-gradient(135deg, ${o} 0%, ${k} 100%);\n}\n`;
+}
+function paletteTXT() {
+  return `${data.brand} · Paleta de marca · ${data.version}\n\n` + data.palette.map(c => `${c.name}\n  HEX  ${c.hex}\n  RGB  ${c.rgb}\n  CMYK ${c.cmyk}\n`).join('\n');
+}
+function renderKit() {
+  const k = data.kit;
+  const sec = h('section', { class: 'chapter theme-light kit', id: 'kit', 'aria-labelledby': 'kit-title', tabindex: '-1' });
+  sec.append(h('header', { class: 'chapter-head reveal' }, [
+    h('div', {}, [h('span', { class: 'kicker', text: k.kicker }), splitWords(h('h2', { id: 'kit-title' }), k.title)]),
+    h('div', { class: 'chapter-lead' }, [h('p', { text: k.lead }), k.note ? h('p', { class: 'chapter-note', text: k.note }) : null])
+  ]));
+  const body = h('div', { class: 'chapter-body kit-body' });
+  // Paquete completo
+  if (k.zip) body.append(h('div', { class: 'kit-hero reveal' }, [
+    h('div', {}, [h('strong', { text: 'Paquete de logos' }), h('p', { text: '5 versiones × 3 fondos, en SVG y PNG de alta resolución con fondo transparente.' })]),
+    h('a', { class: 'btn btn-primary', href: k.zip, download: fileName(k.zip) }, [icon(ICONS.download), 'Descargar ZIP'])
+  ]));
+  // Logos
+  const grid = h('div', { class: 'kit-logos stagger' });
+  LOGO_VARIANTS.forEach(([v, label]) => {
+    grid.append(h('article', { class: 'kit-card' }, [
+      h('h3', { text: label }),
+      h('div', { class: 'kit-variants' }, LOGO_BGS.map(([bg, bgLabel]) => {
+        const src = logoAsset(v, bg); const png = pngFor(src);
+        const svgName = src.startsWith('data:') ? `crisger-${v}-${bg}.svg` : fileName(src);
+        return h('div', { class: `kit-variant bg-${bg}` }, [
+          h('img', { src, alt: `${label} para fondo ${bgLabel.toLowerCase()}`, loading: 'lazy' }),
+          h('div', { class: 'kit-links' }, [
+            h('span', { text: `Fondo ${bgLabel.toLowerCase()}` }),
+            h('a', { href: src, download: svgName, 'aria-label': `Descargar SVG de ${label}, fondo ${bgLabel.toLowerCase()}`, text: 'SVG' }),
+            png ? h('a', { href: png, download: fileName(png), 'aria-label': `Descargar PNG de ${label}, fondo ${bgLabel.toLowerCase()}`, text: 'PNG' }) : null
+          ])
+        ]);
+      }))
+    ]));
+  });
+  body.append(h('div', { class: 'reveal' }, [h('h3', { class: 'kit-subtitle', text: 'Logos' }), grid]));
+  // Colores y tipografías
+  const fonts = [['Bai Jamjuree Regular', 'fonts/bai-regular.ttf', 400], ['Bai Jamjuree SemiBold', 'fonts/bai-semibold.ttf', 600], ['Bai Jamjuree Bold', 'fonts/bai-bold.ttf', 700], ['Inter (variable)', 'fonts/inter-variable.ttf', 400]];
+  body.append(h('div', { class: 'kit-row reveal' }, [
+    h('article', { class: 'kit-card kit-colors' }, [
+      h('h3', { text: 'Paleta' }),
+      h('div', { class: 'kit-swatches' }, data.palette.map(c => h('i', { style: { background: c.hex }, title: `${c.name} ${c.hex}` }))),
+      h('p', { text: 'Códigos HEX, RGB y CMYK listos para diseño, web e imprenta.' }),
+      h('div', { class: 'kit-actions' }, [
+        h('button', { type: 'button', class: 'btn btn-small btn-outline', onclick: () => { downloadBlob(paletteCSS(), 'crisger-paleta.css', 'text/css'); toast('Paleta descargada'); } }, [icon(ICONS.download), 'CSS para web']),
+        h('button', { type: 'button', class: 'btn btn-small btn-outline', onclick: () => { downloadBlob(paletteTXT(), 'crisger-paleta.txt', 'text/plain'); toast('Paleta descargada'); } }, [icon(ICONS.download), 'Texto para imprenta'])
+      ])
+    ]),
+    h('article', { class: 'kit-card kit-fonts' }, [
+      h('h3', { text: 'Tipografías' }),
+      h('ul', {}, fonts.map(([name, file, w]) => h('li', {}, [
+        h('span', { class: name.startsWith('Inter') ? 'font-inter-sample' : '', style: { fontWeight: w }, text: name }),
+        h('a', { href: file, download: fileName(file), 'aria-label': `Descargar ${name}` }, [icon(ICONS.download), 'TTF'])
+      ]))),
+      h('p', { text: 'Bai Jamjuree e Inter se distribuyen con licencia SIL Open Font License. El lettering del logo no se entrega como fuente: se usa siempre el archivo del logo.' })
+    ])
+  ]));
+  sec.append(body);
+  return sec;
+}
+
+/* ---------- Modo presentación ---------- */
+const pres = { on: false, i: 0, fs: false };
+function presSteps() {
+  return [$('#inicio'), ...$$('.chapter').flatMap(sec => [sec, ...$$(':scope > .chapter-body > *', sec)])].filter(Boolean);
+}
+function presLabel(step) {
+  if (step.id === 'inicio') return 'Portada';
+  const sec = step.closest('.chapter');
+  if (sec?.id === 'kit') return data.kit.title;
+  const s = data.sections.find(x => x.id === sec?.id);
+  const title = step.matches('.chapter') ? '' : (step.querySelector('h3, figcaption strong')?.textContent || (step.matches('.gallery') ? 'Galería' : ''));
+  return [s?.navLabel || s?.title, title].filter(Boolean).join(' · ');
+}
+function presGo(i) {
+  const steps = presSteps();
+  pres.i = Math.max(0, Math.min(steps.length - 1, i));
+  const step = steps[pres.i];
+  step.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  $('#presenterLabel').textContent = presLabel(step);
+  $('#presenterCount').textContent = `${pres.i + 1} / ${steps.length}`;
+  $('#presenterPrev').disabled = pres.i === 0;
+  $('#presenterNext').disabled = pres.i === steps.length - 1;
+}
+function presNearest() {
+  const steps = presSteps();
+  let best = 0;
+  steps.forEach((st, i) => { if (st.getBoundingClientRect().top <= window.innerHeight * 0.35) best = i; });
+  return best;
+}
+async function presStart() {
+  pres.on = true;
+  document.documentElement.classList.add('presenting');
+  $('#presenter').hidden = false;
+  pres.fs = false;
+  try { if (document.documentElement.requestFullscreen) { await document.documentElement.requestFullscreen(); pres.fs = true; } } catch { /* pantalla completa no disponible */ }
+  presGo(presNearest());
+  $('#presenterNext').focus({ preventScroll: true });
+  toast(matchMedia('(pointer: coarse)').matches ? 'Deslizá hacia los costados o usá los botones para avanzar' : 'Usá las flechas o la barra espaciadora para avanzar · Esc para salir');
+}
+function presStop() {
+  if (!pres.on) return;
+  pres.on = false;
+  document.documentElement.classList.remove('presenting');
+  $('#presenter').hidden = true;
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  measureHeader();
+  $('#presentBtn').focus({ preventScroll: true });
+}
+function initPresenter() {
+  $('#presentBtn').addEventListener('click', presStart);
+  $('#presenterNext').addEventListener('click', () => presGo(pres.i + 1));
+  $('#presenterPrev').addEventListener('click', () => presGo(pres.i - 1));
+  $('#presenterExit').addEventListener('click', presStop);
+  document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && pres.on && pres.fs) presStop(); });
+  document.addEventListener('keydown', e => {
+    if (!pres.on || $('#lightbox').open || $('#editor').open) return;
+    const t = e.target;
+    const typing = t.matches?.('input, textarea, select, [contenteditable], .pattern-track');
+    if (e.key === 'Escape') { e.preventDefault(); presStop(); return; }
+    if (typing && ['ArrowLeft', 'ArrowRight', ' '].includes(e.key)) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown'].includes(e.key) || (e.key === ' ' && !t.matches?.('button, a'))) { e.preventDefault(); presGo(pres.i + 1); }
+    else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); presGo(pres.i - 1); }
+    else if (e.key === 'Home') { e.preventDefault(); presGo(0); }
+    else if (e.key === 'End') { e.preventDefault(); presGo(Infinity); }
+  });
+  let sx = 0, sy = 0;
+  document.addEventListener('touchstart', e => { sx = e.changedTouches[0].clientX; sy = e.changedTouches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (!pres.on || e.target.closest('.pattern-track, .gallery-filters, .site-nav, dialog')) return;
+    const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.4) presGo(pres.i + (dx < 0 ? 1 : -1));
+  }, { passive: true });
+}
+
 /* ---------- Visor ---------- */
 function openLightbox(list, index, opener) {
   const entries = list.filter(m => m.media);
@@ -898,6 +1052,12 @@ function renderEditor() {
     field(b, 'Nombre de marca (texto alternativo del logo)', data.brand, v => edit(() => { data.brand = v; }));
     field(b, 'Descriptor', data.descriptor, v => edit(() => { data.descriptor = v; }));
     field(b, 'Texto de cierre', data.footerText, v => edit(() => { data.footerText = v; }), { multiline: true, rows: 2 });
+    const k = group(host, 'Kit de marca (descargas)');
+    field(k, 'Etiqueta', data.kit.kicker, v => edit(() => { data.kit.kicker = v; }));
+    field(k, 'Título', data.kit.title, v => edit(() => { data.kit.title = v; }));
+    field(k, 'Introducción', data.kit.lead, v => edit(() => { data.kit.lead = v; }), { multiline: true, rows: 3 });
+    field(k, 'Nota', data.kit.note, v => edit(() => { data.kit.note = v; }), { multiline: true, rows: 2 });
+    field(k, 'Archivo ZIP de logos', data.kit.zip, v => edit(() => { data.kit.zip = v.trim(); }), { help: 'Ruta dentro del repositorio. Dejalo vacío para ocultar el botón.' });
   }
 
   if (tab === 'section') {
@@ -1061,12 +1221,26 @@ async function fetchData() {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+function initEditMode() {
+  // El botón «Editar contenido» solo aparece al abrir el sitio con ?editar (queda recordado en este navegador).
+  // Para ocultarlo otra vez: ?editar=0
+  const params = new URLSearchParams(location.search);
+  try {
+    if (params.has('editar')) {
+      if (params.get('editar') === '0') localStorage.removeItem('crisger-editor');
+      else localStorage.setItem('crisger-editor', '1');
+    }
+    $('#editEntry').hidden = localStorage.getItem('crisger-editor') !== '1';
+  } catch { $('#editEntry').hidden = !params.has('editar'); }
+}
 (async function init() {
   document.documentElement.classList.add('intro');
   setTimeout(() => document.documentElement.classList.remove('intro'), 3200);
   initNavigation();
   initLightbox();
   initEditor();
+  initEditMode();
+  initPresenter();
   try {
     original = normalize(await fetchData());
   } catch {
