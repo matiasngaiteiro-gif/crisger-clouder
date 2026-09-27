@@ -128,9 +128,17 @@ async function copyText(value, label = value, origin = null) {
 }
 
 /* ---------- Persistencia ---------- */
+function fingerprint(obj) {
+  const str = JSON.stringify(obj);
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  return (hash >>> 0).toString(36) + str.length.toString(36);
+}
 function save() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    // Se guarda junto con la huella de la versión publicada sobre la que se editó.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ base: fingerprint(original), savedAt: Date.now(), data }));
+    hideLocalNotice();
   } catch {
     toast('Sin espacio en el navegador. Usá imágenes más livianas y exportá el JSON.');
   }
@@ -140,6 +148,36 @@ function hasLocalChanges() {
   try { return !!localStorage.getItem(STORAGE_KEY) && JSON.stringify(data) !== JSON.stringify(original); } catch { return false; }
 }
 function updateEditBadge() { const b = $('#editBadge'); if (b) b.hidden = !hasLocalChanges(); }
+
+/* Aviso cuando se muestran cambios guardados en este navegador en lugar de la versión publicada. */
+function hideLocalNotice() { $('#localNotice')?.remove(); }
+function usePublished() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch { /* sin acceso */ }
+  data = clone(original);
+  hideLocalNotice(); render(); updateEditBadge();
+  toast('Mostrando la versión publicada');
+}
+function showLocalNotice(outdated) {
+  hideLocalNotice();
+  try { if (!outdated && sessionStorage.getItem('crisger-notice-hidden')) return; } catch { /* sin acceso */ }
+  const box = h('div', { class: `local-notice${outdated ? ' is-outdated' : ''}`, id: 'localNotice', role: 'status' }, [
+    h('p', {}, [
+      h('strong', { text: outdated ? 'Hay una versión publicada más nueva.' : 'Estás viendo cambios guardados en este navegador.' }),
+      h('span', { text: outdated
+        ? ' Este navegador todavía muestra cambios hechos con el editor sobre una versión anterior.'
+        : ' Otras personas ven la versión publicada.' })
+    ]),
+    h('div', { class: 'local-notice-actions' }, [
+      h('button', { type: 'button', class: 'btn btn-small btn-primary', text: 'Ver versión publicada', onclick: usePublished }),
+      h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: outdated ? 'Mantener mis cambios' : 'Ocultar', onclick: () => {
+        if (outdated) save();
+        else { try { sessionStorage.setItem('crisger-notice-hidden', '1'); } catch { /* sin acceso */ } }
+        hideLocalNotice();
+      } })
+    ])
+  ]);
+  document.body.append(box);
+}
 
 function validate(x) {
   return x && typeof x === 'object' && typeof x.heroTitle === 'string' && Array.isArray(x.palette) &&
@@ -204,12 +242,7 @@ function renderHero() {
   const words = String(data.heroTitle || '').trim().split(/\s+/);
   const last = words.pop() || '';
   const firstSection = data.sections[0]?.id || 'main';
-  const decor = h('div', { class: 'hero-decor', 'aria-hidden': 'true' }, [
-    h('img', { src: logoAsset('isotipo', 'naranja'), alt: '', class: 'hero-iso hero-iso-a' }),
-    h('img', { src: logoAsset('isotipo', 'naranja'), alt: '', class: 'hero-iso hero-iso-b' })
-  ]);
   return h('section', { class: 'hero', id: 'inicio', 'aria-labelledby': 'heroTitle' }, [
-    decor,
     h('div', { class: 'hero-inner' }, [
       h('img', { class: 'hero-logo', src: logoAsset('principal', 'oscuro'), alt: [data.brand, data.descriptor].filter(Boolean).join(' · '), width: 730, height: 120 }),
       h('p', { class: 'hero-label' }, [h('span', { text: data.heroLabel }), h('span', { class: 'dot', 'aria-hidden': 'true' }), h('span', { text: `Versión ${data.version}` })]),
@@ -286,8 +319,7 @@ function renderImage(host, m) {
 function renderFeature(m) {
   const figure = h('figure', { class: 'feature reveal', id: `bloque-${safeId(m.id)}` });
   const button = h('button', { class: 'feature-media', type: 'button', 'aria-label': `Ampliar maqueta: ${m.title}`, onclick: e => openLightbox([m], 0, e.currentTarget) }, [
-    m.media ? h('img', { src: m.media, alt: `Maqueta conceptual: ${m.title}`, loading: 'lazy', decoding: 'async' }) : null,
-    h('img', { class: 'feature-badge', src: logoAsset('principal', 'oscuro'), alt: '' })
+    m.media ? h('img', { src: m.media, alt: `Maqueta conceptual: ${m.title}`, loading: 'lazy', decoding: 'async' }) : null
   ]);
   figure.append(button, h('figcaption', {}, [
     h('span', { class: 'tag', text: m.note || 'Maqueta conceptual' }),
@@ -606,7 +638,6 @@ function renderGallery(items) {
     const btn = h('button', { type: 'button', class: 'gallery-card', 'aria-label': `Ampliar ${m.title}` , onclick: e => openLightbox(galleryEntries, galleryEntries.indexOf(m), e.currentTarget) }, [
       h('span', { class: 'gallery-media' }, [
         m.media ? h('img', { src: m.media, alt: `Maqueta conceptual: ${m.title}`, loading: 'lazy', decoding: 'async' }) : null,
-        h('img', { class: 'gallery-badge', src: logoAsset('principal', 'oscuro'), alt: '' }),
         h('span', { class: 'media-zoom' }, icon(ICONS.expand))
       ]),
       h('span', { class: 'gallery-caption' }, [h('span', { class: 'tag', text: m.category || 'Otras' }), h('strong', { text: m.title }), m.body ? h('span', { class: 'gallery-text', text: m.body }) : null])
@@ -1016,6 +1047,7 @@ function initEditor() {
   $('#resetBtn').addEventListener('click', async () => {
     if (!confirm('¿Descartar los cambios locales y cargar la versión publicada?')) return;
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* sin acceso */ }
+    hideLocalNotice();
     try { original = normalize(await fetchData()); } catch { /* conserva la copia cargada */ }
     data = clone(original); editorState.si = editorState.mi = 0;
     render(); renderEditor(); updateEditBadge();
@@ -1045,11 +1077,20 @@ async function fetchData() {
     return;
   }
   data = clone(original);
+  let notice = null;
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (validate(saved)) data = normalize(saved);
+    localStorage.removeItem('crisger-landing-v6'); // copia de la versión anterior del sitio
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    const savedData = stored && stored.data ? stored.data : stored; // admite el formato anterior
+    const base = stored && stored.data ? stored.base : null;
+    if (validate(savedData)) {
+      const local = normalize(savedData);
+      if (fingerprint(local) === fingerprint(original)) localStorage.removeItem(STORAGE_KEY);
+      else { data = local; notice = base === fingerprint(original) ? 'local' : 'outdated'; }
+    }
   } catch { /* datos locales dañados: se usa la versión publicada */ }
   render();
+  if (notice) showLocalNotice(notice === 'outdated');
   onScroll();
   if (location.hash) {
     const target = document.getElementById(decodeURIComponent(location.hash.slice(1)));

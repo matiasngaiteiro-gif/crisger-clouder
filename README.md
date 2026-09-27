@@ -71,6 +71,15 @@ python -m http.server 8000
 
 y abrí `http://localhost:8000`.
 
+## Si no ves los cambios después de actualizar
+
+1. **Esperá a que termine la publicación.** En el repositorio, abrí la pestaña **Actions**: el proceso «pages build and deployment» tiene que aparecer con tilde verde. Suele tardar entre 1 y 3 minutos.
+2. **Revisá dónde quedaron los archivos.** `index.html`, `app.js`, `style.css` y `data.json` tienen que estar en la raíz del repositorio, no dentro de una carpeta (por ejemplo, `CRISGER-Manual-Interactivo-GitHub/index.html`). Subí también las carpetas `media` y `fonts` completas. No subas el ZIP sin descomprimir.
+3. **Forzá la recarga del navegador.** Usá `Ctrl + Shift + R` en Windows o `Cmd + Shift + R` en Mac, o abrí el sitio en una ventana de incógnito.
+4. **Revisá si hay cambios locales.** Si alguna vez usaste el editor en ese navegador, el sitio muestra un aviso abajo a la izquierda. Elegí **Ver versión publicada** o, desde el editor, **Restaurar versión publicada**.
+
+`index.html` carga `style.css` y `app.js` con un número de versión (`?v=...`). Si modificás esos archivos a mano, cambiá ese número para que los navegadores descarguen la versión nueva.
+
 ## Editar el contenido
 
 El botón **Editar contenido** está en el pie de página. Abre un panel con cinco pestañas:
@@ -114,7 +123,7 @@ Las imágenes que se suben desde el editor quedan incrustadas en el JSON. Para i
 - Bai Jamjuree en títulos, navegación y etiquetas: Bold para titulares principales y SemiBold para niveles secundarios. Inter se usa solo en párrafos.
 - Los logos se muestran en SVG, vectorizados a partir de los PNG originales (que siguen en `media/`). Para producción de gran formato conviene usar el vectorial original del diseñador.
 - El logotipo siempre se muestra con sus archivos de marca. Su lettering, basado en Microgramma Extended Bold, no se recompone con una fuente ni se redistribuye.
-- Las diez aplicaciones son **maquetas conceptuales** creadas para ilustrar el sistema. No son fotografías de productos reales.
+- Las diez aplicaciones son **maquetas conceptuales** creadas para ilustrar el sistema, con el logo aplicado sobre cada superficie (cartel, laterales, etiquetas, parches, tapas). No son fotografías de productos reales.
 
 ## Accesibilidad y funcionamiento
 
