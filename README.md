@@ -10,23 +10,34 @@ style.css       Diseño, tipografías locales y responsive
 app.js          Render desde data.json, interacciones y editor
 data.json       Todo el contenido editable del manual
 fonts/          Bai Jamjuree (Regular, SemiBold, Bold) e Inter
-media/          Logos en SVG (5 versiones × 3 fondos), PNG originales, maquetas y referencias
-  descargas/    PNG en alta resolución y ZIP del paquete de logos para el kit de marca
+media/          Logos en SVG (5 versiones × 3 fondos), PNG originales, maquetas, imagen para compartir y referencias
+  descargas/    PNG en alta resolución, ZIP de logos, hoja membretada (Word y PDF) y manual en PDF
 README.md
 ```
 
 ## Secciones
 
-1. **Portada**: logo original, versión, título, texto introductorio, ubicación y enlace para explorar.
+1. **Portada**: versión, título, texto introductorio, ubicación y enlace para explorar. El logo se muestra en la cabecera, sin repetirse en la portada.
 2. **Esencia**: historia de CRISGER, maqueta de la fachada y los conceptos Proteger, Responder y Avanzar.
 3. **Logo**: un único módulo con las versiones principal, vertical, compacta, logotipo e isotipo. Se puede alternar entre fondo claro, oscuro y naranja, ajustar la escala y descargar el archivo mostrado. También incluye un diagrama del espacio de protección y nueve usos incorrectos generados en CSS sobre el logo real.
-4. **Colores**: paleta en mosaico con HEX, RGB y CMYK copiables, dos degradados de naranja a negro, explorador de tonos y matices y comparador de contraste (claro, oscuro, naranja y degradado) con relación de contraste calculada.
+4. **Colores**: paleta en mosaico con HEX, RGB y CMYK copiables, dos degradados de naranja a negro, explorador de tonos y matices (incluye el negro y su escala de grises) y comparador de contraste (claro, oscuro, naranja y degradado) con relación de contraste calculada.
 5. **Tipografía**: el lettering del logo mediante su archivo original, Bai Jamjuree en Regular, SemiBold y Bold, Inter para párrafos y una jerarquía H1 · H2 · H3 · destacado · párrafo.
 6. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
-7. **Aplicaciones**: galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
-8. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter.
+7. **Aplicaciones**: el criterio «En pantalla y en papel» y la galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
+8. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter. Incluye además:
+   - **Generador de piezas**: publicación (1080 × 1080), historia (1080 × 1920), portada de LinkedIn (1584 × 396) y fondo para videollamadas (1920 × 1080), con fondo negro, naranja o claro. Se escribe la etiqueta, el titular y el texto, y se descarga en PNG.
+   - **Firma de correo**: se completan nombre, cargo, teléfono y correo, y se copia lista para pegar en Gmail u Outlook.
+   - **Hoja membretada** en Word (para escribir) y en PDF (para imprimir).
+   - **Manual en PDF** para enviar a imprentas o proveedores.
 
-Algunas maquetas también aparecen dentro de su sección: la fachada en Esencia, el vehículo en Logo, el packaging en Recursos, la señalización en Colores y el catálogo en Tipografía.
+
+## Vista previa al compartir
+
+Al compartir el enlace por WhatsApp, LinkedIn o correo aparece una tarjeta con la imagen `media/og-crisger.jpg`, el título y la descripción del manual. Algunas aplicaciones solo muestran la imagen si la dirección es completa: en `index.html`, reemplazá `media/og-crisger.jpg` (dos veces) por la dirección publicada, por ejemplo `https://USUARIO.github.io/REPOSITORIO/media/og-crisger.jpg`. WhatsApp puede tardar en actualizar una vista previa que ya había guardado.
+
+## Manual en PDF
+
+`media/descargas/crisger-manual-de-marca.pdf` es una versión estática del manual en A4 horizontal. Si modificás el contenido, generá una nueva: abrí el sitio en Chrome, elegí **Imprimir → Guardar como PDF**, con márgenes **Ninguno** y **Gráficos de fondo** activado. El diseño se adapta solo para imprimir y oculta los controles interactivos. Después reemplazá el archivo en `media/descargas`.
 
 ## Modo presentación
 
@@ -43,7 +54,7 @@ La barra inferior muestra la sección actual y el avance (por ejemplo, «Colores
 
 Las animaciones acompañan la lectura sin distraer y usan solo recursos de la marca:
 
-- **Portada**: el logo aparece con un barrido, el título entra palabra por palabra, el degradado naranja-negro se desplaza lentamente y los isotipos del fondo flotan con parallax al hacer scroll.
+- **Portada**: el título entra palabra por palabra y el resplandor naranja del fondo aparece suavemente.
 - **Titulares**: cada título de sección se revela palabra por palabra y la línea naranja del número crece al entrar en pantalla.
 - **Entradas escalonadas**: los colores, conceptos, pesos tipográficos, niveles de jerarquía, usos incorrectos y maquetas de la galería aparecen en secuencia.
 - **Usos incorrectos**: cada ejemplo aparece primero correcto y luego se deforma para mostrar el error. Al pasar el cursor, tocarlo o activarlo con el teclado vuelve al logo correcto para comparar.
@@ -83,6 +94,15 @@ python -m http.server 8000
 ```
 
 y abrí `http://localhost:8000`.
+
+## Dominio propio (opcional)
+
+Para publicar el manual en una dirección como `manual.crisger.com.ar`:
+
+1. En el repositorio, abrí **Settings → Pages → Custom domain**, escribí `manual.crisger.com.ar` y guardá. GitHub crea un archivo `CNAME` en la raíz.
+2. En el panel donde se administra el dominio (el proveedor de hosting o de DNS de `crisger.com.ar`), creá un registro **CNAME** con nombre `manual` y valor `USUARIO.github.io` (tu usuario de GitHub).
+3. Esperá a que el DNS se propague: puede tardar desde minutos hasta 24 horas. Después, en **Settings → Pages**, activá **Enforce HTTPS**.
+4. Actualizá la dirección de la imagen de vista previa en `index.html` con el dominio nuevo.
 
 ## Si no ves los cambios después de actualizar
 
@@ -133,6 +153,8 @@ Algunas listas también controlan ejemplos interactivos:
 Las imágenes que se suben desde el editor quedan incrustadas en el JSON. Para imágenes definitivas es mejor subir el archivo a `media/` en el repositorio y escribir su ruta (por ejemplo, `media/nueva-maqueta.webp`) en el campo **Ruta del archivo**. Así `data.json` se mantiene liviano.
 
 ## Criterios de marca
+
+- En los textos, el nombre se escribe «Crisger» (no en mayúsculas sostenidas) y se destaca automáticamente en negrita. Si en `data.json` aparece como «CRISGER», el sitio lo muestra igual como «Crisger».
 
 - Colores: naranja `#FE5000`, negro `#000000`, grafito `#44464B`, gris `#CCCCCC`, blanco cálido `#F2F2F2` y blanco `#FFFFFF`.
 - Bai Jamjuree en títulos, navegación y etiquetas: Bold para titulares principales y SemiBold para niveles secundarios. Inter se usa solo en párrafos.

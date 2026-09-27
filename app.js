@@ -1,4 +1,4 @@
-/* CRISGER · Manual de marca interactivo
+/* Crisger · Manual de marca interactivo
    Aplicación estática: lee data.json, renderiza la landing y ofrece un editor local (localStorage). */
 'use strict';
 
@@ -86,6 +86,29 @@ function splitWords(node, text, { emLast = false, offset = 0 } = {}) {
     if (i < words.length - 1) node.append(' ');
   });
   return node;
+}
+
+/* ---------- Nombre de marca: siempre «Crisger» en negrita, nunca en mayúsculas sostenidas ---------- */
+const BRAND_RE = /crisger/gi;
+function brandify(root) {
+  if (!root) return;
+  const word = data?.brand && !/^[A-ZÁÉÍÓÚÑ]+$/.test(data.brand) ? data.brand : 'Crisger';
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode: n => (/crisger/i.test(n.nodeValue) && !n.parentElement.closest('script, style, textarea, code, .brand-word')) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const parent = node.parentElement;
+    // En titulares y textos ya destacados solo se corrige la escritura.
+    if (parent.closest('h1, h2, h3, strong, b, .w, .tag, button, a, label, option')) { node.nodeValue = node.nodeValue.replace(BRAND_RE, word); continue; }
+    const frag = document.createDocumentFragment();
+    node.nodeValue.split(/(crisger)/i).forEach(part => {
+      if (!part) return;
+      frag.append(/^crisger$/i.test(part) ? h('strong', { class: 'brand-word', text: word }) : document.createTextNode(part));
+    });
+    node.replaceWith(frag);
+  }
 }
 
 /* ---------- Color ---------- */
@@ -188,10 +211,10 @@ function validate(x) {
 function normalize(x) {
   const d = clone(x);
   for (const key of ['brand', 'descriptor', 'version', 'heroTitle', 'heroText', 'heroLabel', 'heroCta', 'location', 'footerText']) d[key] = d[key] ?? '';
-  d.brand ||= 'CRISGER';
+  d.brand ||= 'Crisger';
   d.heroLabel ||= 'Manual de marca';
   d.heroCta ||= 'Explorar el manual';
-  d.kit = { kicker: 'Descargas', title: 'Kit de marca', lead: '', zip: '', note: '', ...(d.kit || {}) };
+  d.kit = { kicker: 'Descargas', title: 'Kit de marca', lead: '', zip: '', note: '', letterheadDocx: '', letterheadPdf: '', manualPdf: '', ...(d.kit || {}) };
   d.logos ||= {};
   for (const [v] of LOGO_VARIANTS) { d.logos[v] ||= {}; for (const [b] of LOGO_BGS) d.logos[v][b] ||= ''; }
   d.palette = d.palette.filter(c => c && typeof c === 'object').map(c => ({ name: c.name || 'Color', hex: isHex(c.hex) ? c.hex.toUpperCase() : '#888888', rgb: c.rgb || '', cmyk: c.cmyk || '' }));
@@ -230,6 +253,7 @@ function render() {
 
   const main = $('#main');
   main.replaceChildren(renderHero(), ...data.sections.map((s, i) => renderSection(s, i)), renderKit());
+  brandify(main); brandify($('#footer'));
   prepareReveals(main);
   measureHeader();
   updateActiveNav();
@@ -245,7 +269,6 @@ function renderHero() {
   const firstSection = data.sections[0]?.id || 'main';
   return h('section', { class: 'hero', id: 'inicio', 'aria-labelledby': 'heroTitle' }, [
     h('div', { class: 'hero-inner' }, [
-      h('img', { class: 'hero-logo', src: logoAsset('principal', 'oscuro'), alt: [data.brand, data.descriptor].filter(Boolean).join(' · '), width: 730, height: 120 }),
       h('p', { class: 'hero-label' }, [h('span', { text: data.heroLabel }), h('span', { class: 'dot', 'aria-hidden': 'true' }), h('span', { text: `Versión ${data.version}` })]),
       splitWords(h('h1', { id: 'heroTitle' }), [...words, last].join(' '), { emLast: true }),
       h('p', { class: 'hero-text', text: data.heroText })
@@ -281,7 +304,7 @@ function moduleNumber(s, i) {
 
 function renderModule(s, m, i) {
   if (m.kind === 'feature') return renderFeature(m);
-  const wide = WIDE.has(m.kind);
+  const wide = WIDE.has(m.kind) || (m.kind === 'standard' && !m.media);
   const article = h('article', { class: `module kind-${m.kind} ${wide ? 'is-wide' : 'is-split'} reveal`, id: `bloque-${safeId(m.id)}` });
   const copy = h('div', { class: 'module-copy' }, [
     h('span', { class: 'module-number', text: moduleNumber(s, i) }),
@@ -345,7 +368,7 @@ function renderLogoDemo(host) {
   const panel = h('div', { class: 'logo-demo' });
   const stage = h('div', { class: 'logo-stage' });
   const file = h('code', { class: 'logo-file' });
-  const download = h('a', { class: 'btn btn-small btn-outline', download: '' }, [icon(ICONS.download), 'Descargar archivo']);
+  const download = h('a', { class: 'btn btn-small btn-outline', href: '#kit' }, [icon(ICONS.download), 'Ir al kit de descargas']);
   const range = h('input', { type: 'range', min: 25, max: 100, value: ui.logoScale, id: 'logoScale' });
   const out = h('output', { for: 'logoScale', text: `${ui.logoScale}%` });
   function draw() {
@@ -354,11 +377,9 @@ function renderLogoDemo(host) {
     stage.style.setProperty('--scale', ui.logoScale / 100);
     const label = LOGO_VARIANTS.find(v => v[0] === ui.logoVariant)?.[1] || '';
     const bgLabel = LOGO_BGS.find(v => v[0] === ui.logoBg)?.[1] || '';
-    stage.replaceChildren(h('img', { src, alt: `Logo CRISGER, versión ${label.toLowerCase()} sobre fondo ${bgLabel.toLowerCase()}` }),
+    stage.replaceChildren(h('img', { src, alt: `Logo Crisger, versión ${label.toLowerCase()} sobre fondo ${bgLabel.toLowerCase()}` }),
       h('span', { class: 'stage-tag', text: `${label} · fondo ${bgLabel.toLowerCase()}` }));
     file.textContent = src.startsWith('data:') ? 'Imagen cargada desde el editor' : src;
-    download.href = src;
-    download.setAttribute('download', src.startsWith('data:') ? `crisger-${ui.logoVariant}-${ui.logoBg}.${src.startsWith('data:image/svg') ? 'svg' : 'png'}` : src.split('/').pop());
   }
   range.addEventListener('input', () => { ui.logoScale = Number(range.value); out.textContent = `${range.value}%`; stage.style.setProperty('--scale', ui.logoScale / 100); });
   const controls = h('div', { class: 'logo-controls' }, [
@@ -378,7 +399,7 @@ function renderClearspace(host, m) {
   function draw() {
     stage.replaceChildren(h('div', { class: `cs-box v-${ui.clearVariant}` }, [
       ...['tl', 'tr', 'bl', 'br'].map(pos => h('span', { class: `cs-x ${pos}`, 'aria-hidden': 'true', text: 'x' })),
-      h('img', { src: logoAsset(ui.clearVariant, 'claro'), alt: `Espacio de protección alrededor del logo CRISGER, versión ${ui.clearVariant}` })
+      h('img', { src: logoAsset(ui.clearVariant, 'claro'), alt: `Espacio de protección alrededor del logo Crisger, versión ${ui.clearVariant}` })
     ]));
   }
   panel.append(segmented('Versión', LOGO_VARIANTS, ui.clearVariant, v => { ui.clearVariant = v; draw(); }), stage);
@@ -503,7 +524,7 @@ function renderPalette(host) {
 }
 
 function renderToneLab(host) {
-  const choices = data.palette.filter(c => !['#000000', '#FFFFFF', '#F2F2F2'].includes(c.hex.toUpperCase()));
+  const choices = data.palette.filter(c => !['#FFFFFF', '#F2F2F2'].includes(c.hex.toUpperCase()));
   const base = choices.length ? choices : data.palette;
   if (ui.toneIndex >= base.length) ui.toneIndex = 0;
   const lab = h('div', { class: 'tone-lab' });
@@ -522,7 +543,11 @@ function renderToneLab(host) {
   function draw() {
     const color = base[ui.toneIndex]?.hex || '#FE5000';
     const amount = ui.toneAmount / 100;
-    result.replaceChildren(...[['Matices', '#FFFFFF', 'Base mezclada con blanco'], ['Tonos', '#000000', 'Base mezclada con negro']].map(([name, target, desc]) => {
+    // El negro no admite tonos (mezclado con negro sigue siendo negro): solo se muestran sus matices, que forman la escala de grises.
+    const isBlack = luminance(color) < 0.005;
+    const modes = isBlack ? [['Matices', '#FFFFFF', 'Negro mezclado con blanco: escala de grises']] : [['Matices', '#FFFFFF', 'Base mezclada con blanco'], ['Tonos', '#000000', 'Base mezclada con negro']];
+    result.classList.toggle('is-single', isBlack);
+    result.replaceChildren(...modes.map(([name, target, desc]) => {
       const steps = [0, 0.2, 0.4, 0.6, 0.8].map(t => mixHex(color, target, t));
       const current = mixHex(color, target, amount);
       return h('div', { class: 'tone-panel' }, [
@@ -545,7 +570,7 @@ function renderContrast(host, m) {
   const modes = {
     light: { label: 'Claro', bg: P.warm, title: P.black, text: P.graphite, accent: P.orange, accentInk: P.black, ref: P.warm },
     dark: { label: 'Oscuro', bg: P.black, title: P.white, text: P.gray, accent: P.orange, accentInk: P.black, ref: P.black },
-    orange: { label: 'Naranja', bg: P.orange, title: P.black, text: P.black, accent: P.white, accentInk: P.black, ref: P.orange },
+    orange: { label: 'Naranja', bg: P.orange, title: P.white, text: P.black, accent: P.black, accentInk: P.white, ref: P.orange },
     gradient: { label: 'Degradado', bg: `linear-gradient(100deg, ${P.black} 0%, ${P.black} 34%, ${P.orange} 100%)`, title: P.white, text: P.warm, accent: P.orange, accentInk: P.black, ref: P.black }
   };
   const tabs = h('div', { class: 'segmented', role: 'group', 'aria-label': 'Fondo de la aplicación' });
@@ -591,7 +616,7 @@ function renderContrast(host, m) {
 function renderTypeLogo(host) {
   host.append(h('div', { class: 'type-card type-logo' }, [
     h('span', { class: 'type-eyebrow', text: 'Archivo original del logotipo' }),
-    h('div', { class: 'type-logo-stage' }, h('img', { src: logoAsset('logotipo', 'claro'), alt: 'Logotipo CRISGER, archivo original' })),
+    h('div', { class: 'type-logo-stage' }, h('img', { src: logoAsset('logotipo', 'claro'), alt: 'Logotipo Crisger, archivo original' })),
     h('div', { class: 'type-logo-dark' }, h('img', { src: logoAsset('logotipo', 'oscuro'), alt: '' })),
     h('p', { class: 'type-caption', text: 'El lettering se aplica siempre desde el archivo del logo. No se escribe con una fuente.' })
   ]));
@@ -739,8 +764,215 @@ function renderKit() {
       h('p', { text: 'Bai Jamjuree e Inter se distribuyen con licencia SIL Open Font License. El lettering del logo no se entrega como fuente: se usa siempre el archivo del logo.' })
     ])
   ]));
+  body.append(renderTemplates());
   sec.append(body);
   return sec;
+}
+
+/* ---------- Plantillas de uso rápido ---------- */
+const TPL_FORMATS = {
+  post: { label: 'Publicación', size: '1080 × 1080', w: 1080, h: 1080 },
+  story: { label: 'Historia', size: '1080 × 1920', w: 1080, h: 1920 },
+  banner: { label: 'Portada LinkedIn', size: '1584 × 396', w: 1584, h: 396 },
+  video: { label: 'Videollamada', size: '1920 × 1080', w: 1920, h: 1080 }
+};
+const TPL_STYLES = {
+  negro: { label: 'Negro', bg: '#000000', glow: true, title: '#FFFFFF', text: '#CCCCCC', tag: '#FE5000', logo: 'oscuro', iso: 'naranja', isoAlpha: 0.08 },
+  naranja: { label: 'Naranja', bg: '#FE5000', glow: false, title: '#FFFFFF', text: '#000000', tag: '#000000', logo: 'naranja', iso: 'naranja', isoAlpha: 0.16 },
+  claro: { label: 'Claro', bg: '#F2F2F2', glow: false, title: '#000000', text: '#44464B', tag: '#000000', logo: 'claro', iso: 'claro', isoAlpha: 0.09 }
+};
+const tpl = { format: 'post', style: 'negro', tag: 'Seguridad Industrial', title: 'La seguridad se hace visible.', text: 'Elementos de protección personal, indumentaria laboral y asesoramiento técnico en San Nicolás de los Arroyos.', pattern: true };
+const imgCache = new Map();
+function loadImg(src) {
+  if (!imgCache.has(src)) imgCache.set(src, new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = src; }));
+  return imgCache.get(src);
+}
+function wrapLines(ctx, text, maxW) {
+  const words = String(text || '').trim().split(/\s+/).filter(Boolean);
+  const lines = []; let line = '';
+  for (const w of words) {
+    const test = line ? `${line} ${w}` : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+function fitTitle(ctx, text, maxW, size, maxLines, minSize) {
+  let s = size, lines;
+  do {
+    ctx.font = `700 ${s}px "Bai Jamjuree"`;
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${(-0.03 * s).toFixed(1)}px`;
+    lines = wrapLines(ctx, text, maxW);
+    s -= 4;
+  } while ((lines.length > maxLines || lines.some(l => ctx.measureText(l).width > maxW)) && s > minSize);
+  return { lines, size: s + 4 };
+}
+async function drawTemplate(canvas) {
+  const F = TPL_FORMATS[tpl.format], S = TPL_STYLES[tpl.style];
+  const W = F.w, H = F.h;
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  await Promise.all([document.fonts.load('700 40px "Bai Jamjuree"'), document.fonts.load('600 40px "Bai Jamjuree"'), document.fonts.load('400 20px Inter')]).catch(() => {});
+  const [logo, iso] = await Promise.all([loadImg(logoAsset('principal', S.logo)), loadImg(logoAsset('isotipo', S.iso))]);
+  // Fondo
+  ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H);
+  if (S.glow) {
+    const g = ctx.createRadialGradient(W, H, 0, W, H, Math.max(W, H) * 0.95);
+    g.addColorStop(0, 'rgba(254,80,0,0.62)'); g.addColorStop(0.38, 'rgba(254,80,0,0.2)'); g.addColorStop(0.7, 'rgba(254,80,0,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  }
+  // Trama del isotipo que se desvanece desde la esquina inferior derecha
+  if (tpl.pattern) {
+    const t = Math.min(W, H) * (tpl.format === 'banner' ? 0.3 : 0.1);
+    const th = t * iso.height / iso.width, gap = t * 0.1;
+    const maxD = Math.hypot(W, H) * (tpl.format === 'banner' ? 0.45 : 0.62);
+    for (let y = H - th; y > -th; y -= th + gap) for (let x = W - t; x > -t; x -= t + gap) {
+      const a = S.isoAlpha * Math.max(0, 1 - Math.hypot(W - x, H - y) / maxD);
+      if (a <= 0.004) continue;
+      ctx.globalAlpha = a; ctx.drawImage(iso, x, y, t, th);
+    }
+    ctx.globalAlpha = 1;
+  }
+  const u = Math.min(W, H) / 1080;
+  const drawLogo = (x, y, height) => { const w = height * logo.width / logo.height; ctx.drawImage(logo, x, y, w, height); return w; };
+  const drawTag = (x, y, size, align = 'left') => {
+    if (!tpl.tag) return 0;
+    ctx.font = `600 ${size}px "Bai Jamjuree"`; if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+    ctx.textBaseline = 'alphabetic'; ctx.textAlign = align;
+    const barW = size * 1.3, barH = Math.max(3, size * 0.14);
+    const tw = ctx.measureText(tpl.tag).width;
+    const bx = align === 'right' ? x - tw - barW - size * 0.5 : x;
+    ctx.fillStyle = tpl.style === 'naranja' ? '#000000' : '#FE5000';
+    ctx.fillRect(bx, y - size * 0.36, barW, barH);
+    ctx.fillStyle = S.tag === '#FE5000' ? '#FE5000' : S.tag;
+    ctx.fillText(tpl.tag, align === 'right' ? x : x + barW + size * 0.5, y);
+    return size * 1.9;
+  };
+  const drawBlock = (x, bottom, maxW, titleSize, maxLines, textSize, textLines, align = 'left') => {
+    // Calcula de abajo hacia arriba: texto, titular, etiqueta
+    ctx.textAlign = align; ctx.textBaseline = 'alphabetic';
+    let y = bottom;
+    const tx = align === 'right' ? x + maxW : x;
+    if (tpl.text && textLines) {
+      ctx.font = `400 ${textSize}px Inter`; if ('letterSpacing' in ctx) ctx.letterSpacing = '0px';
+      const lines = wrapLines(ctx, tpl.text, maxW).slice(0, textLines);
+      const lh = textSize * 1.45;
+      ctx.fillStyle = S.text;
+      lines.slice().reverse().forEach((l, i) => ctx.fillText(l, tx, y - i * lh));
+      y -= lines.length * lh + textSize * 0.9;
+    }
+    if (tpl.title) {
+      const { lines, size } = fitTitle(ctx, tpl.title, maxW, titleSize, maxLines, titleSize * 0.5);
+      const lh = size * 1.0;
+      ctx.fillStyle = S.title;
+      lines.slice().reverse().forEach((l, i) => ctx.fillText(l, tx, y - i * lh));
+      y -= (lines.length - 1) * lh + size * 1.05;
+    }
+    drawTag(tx, y, Math.round(titleSize * 0.3), align);
+  };
+  if (tpl.format === 'post') {
+    const m = 88 * u; drawLogo(m, m, 46 * u);
+    drawBlock(m, H - m, W - 2 * m, 96 * u, 4, 32 * u, 3);
+  } else if (tpl.format === 'story') {
+    const m = 96 * u; drawLogo(m, 150 * u, 54 * u);
+    drawBlock(m, H - 300 * u, W - 2 * m, 116 * u, 5, 38 * u, 4);
+  } else if (tpl.format === 'banner') {
+    const m = 56;
+    const lw = 34 * logo.width / logo.height; drawLogo(W - m - lw, H - m - 34, 34);
+    drawBlock(W * 0.4, H - m - 34 - 42, W * 0.6 - m, 64, 2, 0, 0, 'right');
+  } else {
+    const m = 72; drawLogo(m, m, 48);
+    drawBlock(m, H - m, W * 0.42, 60, 2, 24, 2);
+  }
+  ctx.textAlign = 'left';
+}
+const escapeHTML = v => String(v || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+function signatureHTML(f) {
+  const logoUrl = new URL('media/descargas/png/logo-crisger.png', location.href).href;
+  const name = escapeHTML(f.name || 'Nombre Apellido'), role = escapeHTML(f.role || 'Cargo');
+  const phone = escapeHTML(f.phone || '+54 000 000-0000'), mail = escapeHTML(f.mail || 'nombre@empresa.com');
+  const brand = escapeHTML([data.brand, data.descriptor, data.location].filter(Boolean).join(' · '));
+  return `<table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;font-family:Arial,Helvetica,sans-serif;color:#000000"><tr>`
+    + `<td style="padding:4px 18px 4px 0;border-right:3px solid #FE5000;vertical-align:middle"><img src="${logoUrl}" width="150" alt="${escapeHTML(data.brand)}" style="display:block;width:150px;height:auto;border:0"></td>`
+    + `<td style="padding:4px 0 4px 18px;vertical-align:middle"><div style="font-size:15px;line-height:20px;font-weight:bold;color:#000000">${name}</div>`
+    + `<div style="font-size:13px;line-height:18px;font-weight:bold;color:#44464B">${role}</div>`
+    + `<div style="font-size:12px;line-height:18px;color:#44464B;padding-top:8px">${phone}<br><a href="mailto:${mail}" style="color:#44464B;text-decoration:none">${mail}</a><br>${brand}</div></td></tr></table>`;
+}
+function renderTemplates() {
+  const wrap = h('div', { class: 'kit-templates reveal', id: 'plantillas' });
+  wrap.append(h('h3', { class: 'kit-subtitle', text: 'Plantillas de uso rápido' }),
+    h('p', { class: 'kit-intro', text: 'Piezas listas para usar: escribí el texto, elegí el formato y descargá. El sistema aplica colores, tipografías y logo según el manual.' }));
+  // Generador de piezas
+  const canvas = h('canvas', { class: 'tpl-canvas', role: 'img', 'aria-label': 'Vista previa de la pieza' });
+  const status = h('span', { class: 'tpl-size' });
+  let timer = 0;
+  const redraw = () => { clearTimeout(timer); timer = setTimeout(async () => { await drawTemplate(canvas); const F = TPL_FORMATS[tpl.format]; status.textContent = `${F.label} · ${F.size} px`; canvas.parentElement?.setAttribute('data-format', tpl.format); }, 60); };
+  const input = (label, key, multiline) => {
+    const id = `tpl-${key}`;
+    const el = h(multiline ? 'textarea' : 'input', { id, rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : 70 });
+    el.value = tpl[key];
+    el.addEventListener('input', () => { tpl[key] = el.value; redraw(); });
+    return h('div', { class: 'tpl-field' }, [h('label', { for: id, text: label }), el]);
+  };
+  const patternToggle = h('input', { type: 'checkbox', id: 'tpl-pattern', checked: tpl.pattern });
+  patternToggle.addEventListener('change', () => { tpl.pattern = patternToggle.checked; redraw(); });
+  const download = h('button', { type: 'button', class: 'btn btn-primary', onclick: () => canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob); const a = h('a', { href: url, download: `crisger-${tpl.format}-${tpl.style}.png` });
+    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500); toast('Pieza descargada');
+  }, 'image/png') }, [icon(ICONS.download), 'Descargar PNG']);
+  wrap.append(h('article', { class: 'kit-card tpl-card' }, [
+    h('div', { class: 'tpl-controls' }, [
+      h('h4', { text: 'Piezas para redes y videollamadas' }),
+      segmented('Formato', Object.entries(TPL_FORMATS).map(([k, f]) => [k, f.label]), tpl.format, v => { tpl.format = v; redraw(); }),
+      segmented('Fondo', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), tpl.style, v => { tpl.style = v; redraw(); }),
+      input('Etiqueta', 'tag'), input('Titular', 'title'), input('Texto', 'text', true),
+      h('label', { class: 'tpl-check', for: 'tpl-pattern' }, [patternToggle, 'Trama del isotipo']),
+      h('div', { class: 'tpl-actions' }, [download, status])
+    ]),
+    h('div', { class: 'tpl-preview' }, canvas)
+  ]));
+  // Firma de correo
+  let sig = { name: '', role: '', phone: '', mail: '' };
+  try { sig = { ...sig, ...JSON.parse(localStorage.getItem('crisger-firma') || '{}') }; } catch { /* sin datos guardados */ }
+  const preview = h('div', { class: 'sig-preview' });
+  const drawSig = () => { preview.innerHTML = signatureHTML(sig); try { localStorage.setItem('crisger-firma', JSON.stringify(sig)); } catch { /* sin acceso */ } };
+  const sigField = (label, key, placeholder, type = 'text') => {
+    const el = h('input', { id: `sig-${key}`, type, placeholder, value: sig[key] });
+    el.addEventListener('input', () => { sig[key] = el.value; drawSig(); });
+    return h('div', { class: 'tpl-field' }, [h('label', { for: `sig-${key}`, text: label }), el]);
+  };
+  const copySig = async () => {
+    const html = signatureHTML(sig);
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([html], { type: 'text/html' }), 'text/plain': new Blob([preview.innerText], { type: 'text/plain' }) })]);
+    } catch {
+      const range = document.createRange(); range.selectNodeContents(preview);
+      const sel = getSelection(); sel.removeAllRanges(); sel.addRange(range); document.execCommand('copy'); sel.removeAllRanges();
+    }
+    toast('Firma copiada: pegala en la configuración de tu correo');
+  };
+  wrap.append(h('article', { class: 'kit-card sig-card' }, [
+    h('div', { class: 'tpl-controls' }, [
+      h('h4', { text: 'Firma de correo' }),
+      h('div', { class: 'sig-grid' }, [sigField('Nombre y apellido', 'name', 'Nombre Apellido'), sigField('Cargo', 'role', 'Cargo'), sigField('Teléfono', 'phone', '+54 000 000-0000', 'tel'), sigField('Correo', 'mail', 'nombre@empresa.com', 'email')]),
+      h('div', { class: 'tpl-actions' }, [
+        h('button', { type: 'button', class: 'btn btn-primary', onclick: copySig }, [icon(ICONS.copy), 'Copiar firma']),
+        h('button', { type: 'button', class: 'btn btn-outline', onclick: () => downloadBlob(`<!doctype html><meta charset="utf-8">${signatureHTML(sig)}`, 'crisger-firma.html', 'text/html') }, [icon(ICONS.download), 'Descargar HTML'])
+      ]),
+      h('p', { class: 'tpl-help', text: 'Copiá la firma y pegala en Gmail (Configuración → Firma) o en Outlook (Configuración → Correo → Firmas). El logo se carga desde el sitio publicado.' })
+    ]),
+    h('div', { class: 'sig-stage' }, [h('span', { class: 'tpl-size', text: 'Vista previa' }), preview])
+  ]));
+  // Documentos listos
+  const k = data.kit;
+  const doc = (title, text, links) => h('article', { class: 'kit-card doc-card' }, [h('h4', { text: title }), h('p', { text }),
+    h('div', { class: 'kit-actions' }, links.filter(l => l[1]).map(([label, href]) => h('a', { class: 'btn btn-small btn-outline', href, download: fileName(href) }, [icon(ICONS.download), label])))]);
+  wrap.append(h('div', { class: 'kit-row' }, [
+    doc('Hoja membretada', 'Formato A4 con el logo, la línea naranja y los datos de la marca. En Word para escribir; en PDF para imprimir.', [['Word (.docx)', k.letterheadDocx], ['PDF', k.letterheadPdf]]),
+    doc('Manual en PDF', 'Una versión del manual para enviar a imprentas o proveedores. También podés imprimir esta página: el diseño se adapta solo.', [['Descargar PDF', k.manualPdf]])
+  ]));
+  requestAnimationFrame(() => { redraw(); drawSig(); });
+  return wrap;
 }
 
 /* ---------- Modo presentación ---------- */
@@ -840,6 +1072,7 @@ function drawLightbox(direction = 0) {
   img.alt = /mockup-/.test(m.media) ? `Maqueta conceptual: ${m.title}` : m.title;
   $('#lightboxTitle').textContent = m.title;
   $('#lightboxText').textContent = m.body || '';
+  brandify($('#lightbox .lightbox-caption'));
   $('#lightboxCategory').textContent = m.category || (m.kind === 'essence' || /mockup-/.test(m.media) ? 'Maqueta conceptual' : 'Referencia');
   const multi = lightboxList.length > 1;
   $('#lightboxCount').textContent = multi ? `${pad2(lightboxIndex + 1)} / ${pad2(lightboxList.length)}` : '';
@@ -1058,6 +1291,9 @@ function renderEditor() {
     field(k, 'Introducción', data.kit.lead, v => edit(() => { data.kit.lead = v; }), { multiline: true, rows: 3 });
     field(k, 'Nota', data.kit.note, v => edit(() => { data.kit.note = v; }), { multiline: true, rows: 2 });
     field(k, 'Archivo ZIP de logos', data.kit.zip, v => edit(() => { data.kit.zip = v.trim(); }), { help: 'Ruta dentro del repositorio. Dejalo vacío para ocultar el botón.' });
+    field(k, 'Hoja membretada (Word)', data.kit.letterheadDocx, v => edit(() => { data.kit.letterheadDocx = v.trim(); }));
+    field(k, 'Hoja membretada (PDF)', data.kit.letterheadPdf, v => edit(() => { data.kit.letterheadPdf = v.trim(); }));
+    field(k, 'Manual en PDF', data.kit.manualPdf, v => edit(() => { data.kit.manualPdf = v.trim(); }));
   }
 
   if (tab === 'section') {
@@ -1241,6 +1477,11 @@ function initEditMode() {
   initEditor();
   initEditMode();
   initPresenter();
+  // Al imprimir o guardar como PDF: carga todas las imágenes y muestra todo el contenido.
+  window.addEventListener('beforeprint', () => {
+    $$('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; });
+    $$('.reveal').forEach(el => el.classList.add('in-view'));
+  });
   try {
     original = normalize(await fetchData());
   } catch {
