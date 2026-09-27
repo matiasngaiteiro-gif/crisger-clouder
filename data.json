@@ -96,13 +96,12 @@
         {
           "id": "patrones",
           "title": "Patrones",
-          "body": "Tres composiciones construidas con el isotipo: una trama técnica, un ritmo alternado y una escala más expresiva. Deslizá para ver cada patrón. Usalos como fondos o acentos sin comprometer la legibilidad del contenido.",
+          "body": "Dos composiciones construidas con el isotipo: una trama técnica y un ritmo alternado. Deslizá para ver cada patrón. Usalos como fondos o acentos sin comprometer la legibilidad del contenido.",
           "media": "",
           "note": "",
           "items": [
             "Trama técnica",
-            "Ritmo alternado",
-            "Escala expresiva"
+            "Ritmo alternado"
           ],
           "kind": "patterns"
         },
@@ -394,29 +393,29 @@
   "footerText": "Proteger. Responder. Avanzar.",
   "logos": {
     "principal": {
-      "claro": "media/logo-crisger.png",
-      "oscuro": "media/logo-crisger-white.png",
-      "naranja": "media/logo-crisger-mono-white.png"
+      "claro": "media/logo-crisger.svg",
+      "oscuro": "media/logo-crisger-white.svg",
+      "naranja": "media/logo-crisger-mono-white.svg"
     },
     "vertical": {
-      "claro": "media/logo-vertical.png",
-      "oscuro": "media/logo-vertical-white.png",
-      "naranja": "media/logo-vertical-mono-white.png"
+      "claro": "media/logo-vertical.svg",
+      "oscuro": "media/logo-vertical-white.svg",
+      "naranja": "media/logo-vertical-mono-white.svg"
     },
     "compacto": {
-      "claro": "media/logo-compacto.png",
-      "oscuro": "media/logo-compacto-white.png",
-      "naranja": "media/logo-compacto-mono-white.png"
+      "claro": "media/logo-compacto.svg",
+      "oscuro": "media/logo-compacto-white.svg",
+      "naranja": "media/logo-compacto-mono-white.svg"
     },
     "logotipo": {
-      "claro": "media/logotipo.png",
-      "oscuro": "media/logotipo-white.png",
-      "naranja": "media/logotipo-mono-white.png"
+      "claro": "media/logotipo.svg",
+      "oscuro": "media/logotipo-white.svg",
+      "naranja": "media/logotipo-mono-white.svg"
     },
     "isotipo": {
-      "claro": "media/isotipo.png",
-      "oscuro": "media/isotipo-white.png",
-      "naranja": "media/isotipo-mono-white.png"
+      "claro": "media/isotipo.svg",
+      "oscuro": "media/isotipo-white.svg",
+      "naranja": "media/isotipo-mono-white.svg"
     }
   },
   "heroCta": "Explorar el manual",

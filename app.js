@@ -58,7 +58,7 @@ let revealObserver = null;
 
 const LOGO_VARIANTS = [['principal', 'Principal'], ['vertical', 'Vertical'], ['compacto', 'Compacta'], ['logotipo', 'Logotipo'], ['isotipo', 'Isotipo']];
 const LOGO_BGS = [['claro', 'Claro'], ['oscuro', 'Oscuro'], ['naranja', 'Naranja']];
-const DEFAULT_LOGO = 'media/logo-crisger.png';
+const DEFAULT_LOGO = 'media/logo-crisger.svg';
 const KINDS = [
   ['standard', 'Texto e imagen'], ['essence', 'Historia y conceptos'], ['feature', 'Maqueta destacada'],
   ['showcase', 'Aplicación de galería'], ['logo', 'Sistema de logos'], ['clearspace', 'Espacio de protección'],
@@ -310,7 +310,7 @@ function renderLogoDemo(host) {
       h('span', { class: 'stage-tag', text: `${label} · fondo ${bgLabel.toLowerCase()}` }));
     file.textContent = src.startsWith('data:') ? 'Imagen cargada desde el editor' : src;
     download.href = src;
-    download.setAttribute('download', src.startsWith('data:') ? `crisger-${ui.logoVariant}-${ui.logoBg}.png` : src.split('/').pop());
+    download.setAttribute('download', src.startsWith('data:') ? `crisger-${ui.logoVariant}-${ui.logoBg}.${src.startsWith('data:image/svg') ? 'svg' : 'png'}` : src.split('/').pop());
   }
   range.addEventListener('input', () => { ui.logoScale = Number(range.value); out.textContent = `${range.value}%`; stage.style.setProperty('--scale', ui.logoScale / 100); });
   const controls = h('div', { class: 'logo-controls' }, [
@@ -376,23 +376,21 @@ function buildPattern(i) {
   const stage = h('div', { class: `pattern-stage pattern-${i}`, 'aria-hidden': 'true' });
   if (i === 0) {
     for (let n = 0; n < 12 * 10; n++) stage.append(h('img', { src: iso, alt: '' }));
-  } else if (i === 1) {
+  } else {
     for (let r = 0; r < 10; r++) {
       const row = h('div', { class: 'pattern-row' });
       for (let c = 0; c < 10; c++) row.append(h('img', { src: iso, alt: '', class: (r + c) % 2 ? 'soft' : '' }));
       stage.append(row);
     }
-  } else {
-    [['xl', 1], ['l', 2], ['m', 3], ['s', 4], ['s2', 5], ['xs', 6]].forEach(([size]) => stage.append(h('img', { src: iso, alt: '', class: `scale-${size}` })));
   }
   return stage;
 }
 function renderPatterns(host, m) {
-  const labels = m.items.length ? m.items : ['Trama técnica', 'Ritmo alternado', 'Escala expresiva'];
+  const labels = m.items.length ? m.items : ['Trama técnica', 'Ritmo alternado'];
   const total = labels.length;
   const track = h('div', { class: 'pattern-track', tabindex: '0', role: 'region', 'aria-roledescription': 'carrusel', 'aria-label': 'Patrones con el isotipo. Usá las flechas para recorrerlos.' });
   const cards = labels.map((label, i) => h('figure', { class: 'pattern-card', 'aria-roledescription': 'diapositiva', 'aria-label': `${i + 1} de ${total}: ${label}` }, [
-    buildPattern(i % 3),
+    buildPattern(i % 2),
     h('figcaption', {}, [h('strong', { text: label }), h('span', { text: `${pad2(i + 1)} / ${pad2(total)}` })])
   ]));
   track.append(...cards);
@@ -861,7 +859,7 @@ function renderEditor() {
       field(g, 'Texto', m.body, v => edit(() => { m.body = v; }), { multiline: true, rows: 5 });
       const listHelp = {
         incorrect: 'Cada línea genera un ejemplo. Palabras clave: color, contorno, forma, volumen, sombra, reflejar, comprimir, expandir, rotar.',
-        patterns: 'Una línea por patrón (se usan los tres primeros diseños).',
+        patterns: 'Una línea por patrón. Los diseños se alternan: trama técnica y ritmo alternado.',
         contrast: 'Líneas: 1 etiqueta, 2 titular, 3 texto, 4 acento.',
         'type-scale': 'Una línea por nivel: «Referencia — Texto de ejemplo».',
         essence: 'Cada línea se muestra como un concepto.'

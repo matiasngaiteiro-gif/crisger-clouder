@@ -10,7 +10,7 @@ style.css       Diseño, tipografías locales y responsive
 app.js          Render desde data.json, interacciones y editor
 data.json       Todo el contenido editable del manual
 fonts/          Bai Jamjuree (Regular, SemiBold, Bold) e Inter
-media/          Logos originales (5 versiones × 3 fondos), maquetas y referencias
+media/          Logos en SVG (5 versiones × 3 fondos), PNG originales, maquetas y referencias
 README.md
 ```
 
@@ -19,7 +19,7 @@ README.md
 1. **Portada**: logo original, versión, título, texto introductorio, ubicación y enlace para explorar.
 2. **Esencia**: historia de CRISGER, maqueta de la fachada y los conceptos Proteger, Responder y Avanzar.
 3. **Logo**: un único módulo con las versiones principal, vertical, compacta, logotipo e isotipo. Se puede alternar entre fondo claro, oscuro y naranja, ajustar la escala y descargar el archivo mostrado. También incluye un diagrama del espacio de protección y nueve usos incorrectos generados en CSS sobre el logo real.
-4. **Recursos**: carrusel con tres patrones construidos con el isotipo real (Trama técnica, Ritmo alternado y Escala expresiva). Se recorre deslizando, con flechas, con puntos o con el teclado.
+4. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
 5. **Colores**: paleta en mosaico con HEX, RGB y CMYK copiables, dos degradados de naranja a negro, explorador de tonos y matices y comparador de contraste (claro, oscuro, naranja y degradado) con relación de contraste calculada.
 6. **Tipografía**: el lettering del logo mediante su archivo original, Bai Jamjuree en Regular, SemiBold y Bold, Inter para párrafos y una jerarquía H1 · H2 · H3 · destacado · párrafo.
 7. **Aplicaciones**: galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
@@ -98,7 +98,8 @@ Las imágenes que se suben desde el editor quedan incrustadas en el JSON. Para i
 
 - Colores: naranja `#FE5000`, negro `#000000`, grafito `#44464B`, gris `#CCCCCC`, blanco cálido `#F2F2F2` y blanco `#FFFFFF`.
 - Bai Jamjuree en títulos, navegación y etiquetas: Bold para titulares principales y SemiBold para niveles secundarios. Inter se usa solo en párrafos.
-- El logotipo siempre se muestra con sus archivos originales. Su lettering, basado en Microgramma Extended Bold, no se recompone con una fuente ni se redistribuye.
+- Los logos se muestran en SVG, vectorizados a partir de los PNG originales (que siguen en `media/`). Para producción de gran formato conviene usar el vectorial original del diseñador.
+- El logotipo siempre se muestra con sus archivos de marca. Su lettering, basado en Microgramma Extended Bold, no se recompone con una fuente ni se redistribuye.
 - Las diez aplicaciones son **maquetas conceptuales** creadas para ilustrar el sistema. No son fotografías de productos reales.
 
 ## Accesibilidad y funcionamiento
