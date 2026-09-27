@@ -25,11 +25,49 @@ README.md
 6. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
 7. **Aplicaciones**: una introducción sobre cómo se aplica la identidad en pantalla y en soportes físicos, y la galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
 8. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter. Incluye además:
-   - **Generador de piezas**: cuatro formatos (publicación 1080 × 1080, historia 1080 × 1920, portada de LinkedIn 1584 × 396 y fondo para videollamadas 1920 × 1080), tres estructuras de texto (**Clásica**, con el texto abajo; **Centrada**, con el texto al medio; y **Panel**, con un bloque de color al lado de la imagen) y tres colores (negro, naranja o claro). Se puede subir una imagen de fondo propia o usar una de las maquetas, encuadrarla arrastrándola, ajustar el zoom y el velo que asegura la lectura, y agregar un botón opcional. La pieza se descarga en PNG.
+   - **Generador de piezas**: cuatro formatos (publicación 1080 × 1080, historia 1080 × 1920, portada de LinkedIn 1584 × 396 y fondo para videollamadas 1920 × 1080), tres estructuras de texto (**Clásica**, **Centrada** y **Panel**) y tres colores (negro, naranja o claro). El fondo puede ser una imagen o un video propio, una maqueta del manual o un archivo de la carpeta de Google Drive; se encuadra arrastrándolo, con zoom y un velo que asegura la lectura. El logo y la trama se pueden mostrar u ocultar. Las imágenes se descargan en PNG y los videos se exportan como piezas animadas.
    - **Firma de correo**: se completan nombre, cargo, teléfono y correo, y se copia lista para pegar en Gmail u Outlook.
    - **Hoja membretada** en Word (para escribir) y en PDF (para imprimir).
    - **Manual en PDF** para enviar a imprentas o proveedores.
 
+
+## Videos en el generador
+
+- **Origen**: videos MP4, WebM o MOV de hasta **50 MB**.
+- **Pieza exportada**: un tramo de **3 a 15 segundos**, elegido con los controles «Inicio del tramo» y «Duración de la pieza». Se exporta sin sonido, a 30 cuadros por segundo, con un peso orientativo de hasta 12 MB.
+- **Formato**: Chrome y Edge actualizados, y Safari, exportan en **MP4 (H.264)**, el formato que aceptan Instagram, LinkedIn y WhatsApp. Otros navegadores exportan en **WebM**; en ese caso conviene convertirlo a MP4 antes de publicarlo.
+- También se puede descargar el cuadro actual en PNG.
+- La exportación se hace en tiempo real: un video de 10 segundos tarda unos 10 segundos. Conviene no cambiar de pestaña mientras se exporta.
+
+## Carpeta de Google Drive
+
+El generador puede mostrar como fondos las imágenes y los videos de una carpeta de Google Drive. Lo que se suba a esa carpeta aparece en el sitio al recargarlo, sin tocar GitHub.
+
+**1. Preparar la carpeta**
+
+1. En Google Drive, creá una carpeta (por ejemplo, «Crisger · Fondos para plantillas»).
+2. Tocá **Compartir → Acceso general → Cualquier persona con el enlace → Lector**. Todo lo que pongas en esa carpeta será visible para quien tenga el enlace: no guardes ahí nada privado.
+3. Copiá el enlace de la carpeta.
+
+**2. Crear la clave de Google (una sola vez, unos 10 minutos)**
+
+1. Entrá a [console.cloud.google.com](https://console.cloud.google.com) con la misma cuenta de Google y creá un proyecto (por ejemplo, «Crisger manual»).
+2. En **APIs y servicios → Biblioteca**, buscá **Google Drive API** y tocá **Habilitar**.
+3. En **APIs y servicios → Credenciales → Crear credenciales → Clave de API**, copiá la clave generada.
+4. Tocá la clave para restringirla:
+   - En **Restricciones de aplicaciones**, elegí **Sitios web** y agregá la dirección del sitio con un asterisco al final, por ejemplo `https://USUARIO.github.io/*`. Si usás dominio propio, agregá también `https://manual.crisger.com.ar/*`.
+   - En **Restricciones de API**, elegí **Restringir clave** y marcá solo **Google Drive API**.
+   - Guardá.
+
+Con estas restricciones, la clave solo funciona desde tu sitio y solo para leer archivos públicos de Drive, por eso puede quedar en `data.json`.
+
+**3. Conectar el sitio**
+
+1. Abrí el sitio con `?editar`, tocá **Editar contenido** y entrá en la pestaña **Portada**.
+2. En el grupo **Google Drive**, pegá el enlace de la carpeta y la clave.
+3. Exportá `data.json` y reemplazalo en GitHub para que quede publicado.
+
+Las fotos de celular en formato HEIC no se pueden leer en el navegador: subilas en JPG o PNG. Los videos de Drive también respetan el límite de 50 MB.
 
 ## Vista previa al compartir
 

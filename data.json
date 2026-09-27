@@ -390,5 +390,9 @@
     "letterheadDocx": "media/descargas/crisger-hoja-membretada.docx",
     "letterheadPdf": "media/descargas/crisger-hoja-membretada.pdf",
     "manualPdf": "media/descargas/crisger-manual-de-marca.pdf"
+  },
+  "drive": {
+    "folder": "",
+    "apiKey": ""
   }
 }

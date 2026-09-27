@@ -215,6 +215,7 @@ function normalize(x) {
   d.heroLabel ||= 'Manual de marca';
   d.heroCta ||= 'Explorar el manual';
   d.kit = { kicker: 'Descargas', title: 'Kit de marca', lead: '', zip: '', note: '', letterheadDocx: '', letterheadPdf: '', manualPdf: '', ...(d.kit || {}) };
+  d.drive = { folder: '', apiKey: '', ...(d.drive || {}) };
   d.logos ||= {};
   for (const [v] of LOGO_VARIANTS) { d.logos[v] ||= {}; for (const [b] of LOGO_BGS) d.logos[v][b] ||= ''; }
   d.palette = d.palette.filter(c => c && typeof c === 'object').map(c => ({ name: c.name || 'Color', hex: isHex(c.hex) ? c.hex.toUpperCase() : '#888888', rgb: c.rgb || '', cmyk: c.cmyk || '' }));
@@ -787,7 +788,8 @@ const tpl = {
   tag: 'Seguridad Industrial', title: 'La seguridad se hace visible.',
   text: 'Elementos de protección personal, indumentaria laboral y asesoramiento técnico en San Nicolás de los Arroyos.',
   cta: '', pattern: true,
-  image: null, imageName: '', zoom: 1, ox: 0, oy: 0, shade: 60
+  image: null, video: null, imageName: '', zoom: 1, ox: 0, oy: 0, shade: 60,
+  showLogo: true, clipStart: 0, clipLength: 8
 };
 const imgCache = new Map();
 function loadImg(src) {
@@ -860,8 +862,11 @@ function textBlock(ctx, S, o) {
   ctx.textAlign = 'left'; setLS(ctx, 0);
 }
 function drawCover(ctx, img, x, y, w, h) {
-  const scale = Math.max(w / img.width, h / img.height) * tpl.zoom;
-  const dw = img.width * scale, dh = img.height * scale;
+  // Sirve tanto para imágenes como para el cuadro actual de un video
+  const iw = img.videoWidth || img.naturalWidth || img.width, ih = img.videoHeight || img.naturalHeight || img.height;
+  if (!iw || !ih) return;
+  const scale = Math.max(w / iw, h / ih) * tpl.zoom;
+  const dw = iw * scale, dh = ih * scale;
   let dx = x + (w - dw) / 2 + tpl.ox * w, dy = y + (h - dh) / 2 + tpl.oy * h;
   dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.drawImage(img, dx, dy, dw, dh); ctx.restore();
@@ -889,17 +894,19 @@ async function drawTemplate(canvas) {
   const F = TPL_FORMATS[tpl.format];
   let S = TPL_STYLES[tpl.style];
   const W = F.w, H = F.h;
-  canvas.width = W; canvas.height = H;
+  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
   const ctx = canvas.getContext('2d');
-  await Promise.all([document.fonts.load('700 40px "Bai Jamjuree"'), document.fonts.load('600 40px "Bai Jamjuree"'), document.fonts.load('400 20px Inter')]).catch(() => {});
+  if (!drawTemplate.fonts) drawTemplate.fonts = Promise.all([document.fonts.load('700 40px "Bai Jamjuree"'), document.fonts.load('600 40px "Bai Jamjuree"'), document.fonts.load('400 20px Inter')]).catch(() => {});
+  await drawTemplate.fonts;
+  ctx.clearRect(0, 0, W, H);
   // Con imagen de fondo a pantalla completa, los textos se ajustan para leerse sobre el velo
-  if (tpl.image && tpl.layout !== 'panel') {
+  if ((tpl.image || tpl.video) && tpl.layout !== 'panel') {
     if (tpl.style === 'negro') S = { ...S, text: '#E6E6E6', tag: '#FFFFFF' };
     if (tpl.style === 'naranja') S = { ...S, title: '#FFFFFF', text: '#FFFFFF', tag: '#FFFFFF', bar: '#FFFFFF', cta: '#FFFFFF', ctaInk: '#000000' };
     if (tpl.style === 'claro') S = { ...S, text: '#000000' };
   }
   const [logo, iso] = await Promise.all([loadImg(logoAsset('principal', S.logo)), loadImg(logoAsset('isotipo', S.iso))]);
-  const img = tpl.image;
+  const img = tpl.video || tpl.image;
   const geo = panelGeometry(W, H);
   const u = Math.min(W, H) / 1080;
   // 1. Fondo de color
@@ -944,7 +951,7 @@ async function drawTemplate(canvas) {
   if (tpl.pattern && (geo || !img)) drawPattern(ctx, iso, S, W, H, geo ? geo.panel : { x: 0, y: 0, w: W, h: H });
   // 5. Logo y textos
   const logoW = hgt => hgt * logo.width / logo.height;
-  const drawLogo = (x, y, hgt) => ctx.drawImage(logo, x, y, logoW(hgt), hgt);
+  const drawLogo = (x, y, hgt) => { if (tpl.showLogo) ctx.drawImage(logo, x, y, logoW(hgt), hgt); };
   const L = tpl.layout, f = tpl.format;
   if (L === 'panel') {
     const p = geo.panel, m = (f === 'banner' ? 40 : 72 * u), lh = f === 'banner' ? 30 : 44 * u;
@@ -989,15 +996,41 @@ function renderTemplates() {
   wrap.append(h('h3', { class: 'kit-subtitle', text: 'Plantillas de uso rápido' }),
     h('p', { class: 'kit-intro', text: 'Piezas listas para usar: escribí el texto, elegí el formato y descargá. El sistema aplica colores, tipografías y logo según el manual.' }));
   // Generador de piezas
+  const VIDEO_MAX_MB = 50;      // peso máximo del video de origen
+  const CLIP_MAX_S = 15;        // duración máxima de la pieza exportada
+  const CLIP_MIN_S = 3;
+  const OUT_MAX_MB = 12;        // tope orientativo del archivo exportado
   const canvas = h('canvas', { class: 'tpl-canvas', role: 'img', 'aria-label': 'Vista previa de la pieza' });
   const status = h('span', { class: 'tpl-size' });
-  let timer = 0;
-  const redraw = (delay = 60) => { clearTimeout(timer); timer = setTimeout(async () => {
-    await drawTemplate(canvas);
-    const F = TPL_FORMATS[tpl.format]; status.textContent = `${F.label} · ${F.size} px`;
-    canvas.classList.toggle('is-draggable', !!tpl.image);
-    imgTools.hidden = !tpl.image;
-  }, delay); };
+  let timer = 0, exporting = false, loopId = 0, drawing = false;
+  const hasMedia = () => !!(tpl.image || tpl.video);
+  const syncTools = () => {
+    const F = TPL_FORMATS[tpl.format];
+    status.textContent = `${F.label} · ${F.size} px${tpl.video ? ` · video de ${tpl.clipLength} s` : ''}`;
+    canvas.classList.toggle('is-draggable', hasMedia());
+    imgTools.hidden = !hasMedia();
+    videoTools.hidden = !tpl.video;
+    exportBtn.hidden = !tpl.video;
+    quickVideo.hidden = !tpl.video;
+  };
+  const redraw = (delay = 60) => {
+    if (tpl.video && !tpl.video.paused) { syncTools(); return; } // el bucle del video ya redibuja
+    clearTimeout(timer); timer = setTimeout(async () => { await drawTemplate(canvas); syncTools(); }, delay);
+  };
+  // Bucle de vista previa del video: repite el tramo elegido
+  const startLoop = () => {
+    cancelAnimationFrame(loopId);
+    const v = tpl.video; if (!v) return;
+    const tick = async () => {
+      if (tpl.video !== v) return;
+      if (!exporting && v.currentTime >= tpl.clipStart + tpl.clipLength) v.currentTime = tpl.clipStart;
+      if (!drawing) { drawing = true; await drawTemplate(canvas); drawing = false; }
+      loopId = requestAnimationFrame(tick);
+    };
+    v.play().catch(() => {});
+    loopId = requestAnimationFrame(tick);
+  };
+  const stopVideo = () => { cancelAnimationFrame(loopId); if (tpl.video) { tpl.video.pause(); URL.revokeObjectURL(tpl.video.src); } tpl.video = null; };
   const input = (label, key, multiline, placeholder = '') => {
     const id = `tpl-${key}`;
     const el = h(multiline ? 'textarea' : 'input', { id, rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : 70, placeholder });
@@ -1005,48 +1038,172 @@ function renderTemplates() {
     el.addEventListener('input', () => { tpl[key] = el.value; redraw(); });
     return h('div', { class: 'tpl-field' }, [h('label', { for: id, text: label }), el]);
   };
-  const patternToggle = h('input', { type: 'checkbox', id: 'tpl-pattern', checked: tpl.pattern });
-  patternToggle.addEventListener('change', () => { tpl.pattern = patternToggle.checked; redraw(); });
-  // Imagen de fondo: subir una propia o usar una maqueta del manual
-  const setImage = async (src, name) => {
-    $$('.tpl-thumb', thumbs).forEach(t => t.setAttribute('aria-pressed', String(t.title === name)));
-    try { tpl.image = await loadImg(src); tpl.imageName = name; tpl.zoom = 1; tpl.ox = 0; tpl.oy = 0; zoom.value = 100; zoomOut.textContent = '100%'; imgName.textContent = name; redraw(0); }
-    catch { toast('No se pudo cargar la imagen'); }
+  const check = (label, key) => {
+    const el = h('input', { type: 'checkbox', id: `tpl-${key}`, checked: tpl[key] });
+    el.addEventListener('change', () => { tpl[key] = el.checked; redraw(0); });
+    return h('label', { class: 'tpl-check', for: `tpl-${key}` }, [el, label]);
   };
-  const upload = h('input', { type: 'file', accept: 'image/*', class: 'sr-only' });
-  upload.addEventListener('change', () => { const file = upload.files?.[0]; if (file) setImage(URL.createObjectURL(file), file.name); upload.value = ''; });
+  const markThumbs = name => $$('.tpl-thumb', wrap).forEach(t => t.setAttribute('aria-pressed', String(t.title === name)));
+  const resetFraming = name => { tpl.zoom = 1; tpl.ox = 0; tpl.oy = 0; zoom.value = 100; zoomOut.textContent = '100%'; imgName.textContent = name; tpl.imageName = name; markThumbs(name); };
+  // Imagen de fondo
+  const setImage = async (src, name) => {
+    try { const im = await loadImg(src); stopVideo(); tpl.image = im; resetFraming(name); redraw(0); }
+    catch { toast('No se pudo cargar la imagen. Probá con JPG, PNG o WebP.'); }
+  };
+  // Video de fondo, con límites de peso y duración
+  const setVideo = (src, name, bytes) => new Promise(resolve => {
+    if (bytes && bytes > VIDEO_MAX_MB * 1024 * 1024) { toast(`El video pesa más de ${VIDEO_MAX_MB} MB. Usá uno más corto o comprimido.`); return resolve(false); }
+    const v = document.createElement('video');
+    v.muted = true; v.playsInline = true; v.preload = 'auto'; v.crossOrigin = 'anonymous'; v.src = src;
+    v.onloadeddata = () => {
+      stopVideo(); tpl.image = null; tpl.video = v; resetFraming(name);
+      const d = v.duration || CLIP_MAX_S;
+      tpl.clipLength = Math.max(CLIP_MIN_S, Math.min(CLIP_MAX_S, Math.floor(d), tpl.clipLength || 8));
+      tpl.clipStart = 0;
+      clipLen.max = Math.max(CLIP_MIN_S, Math.min(CLIP_MAX_S, Math.floor(d))); clipLen.value = tpl.clipLength; clipLenOut.textContent = `${tpl.clipLength} s`;
+      clipStart.max = Math.max(0, Math.floor(d - tpl.clipLength)); clipStart.value = 0; clipStartOut.textContent = '0 s';
+      clipStart.disabled = d <= tpl.clipLength;
+      durInfo.textContent = `Video de ${d.toFixed(1)} s. Se exporta un tramo de hasta ${CLIP_MAX_S} s, sin sonido.`;
+      syncTools(); startLoop(); resolve(true);
+    };
+    v.onerror = () => { toast('No se pudo leer el video. Probá con MP4 (H.264) o WebM.'); resolve(false); };
+  });
+  const handleFile = file => {
+    if (!file) return;
+    if (file.type.startsWith('video/')) setVideo(URL.createObjectURL(file), file.name, file.size);
+    else setImage(URL.createObjectURL(file), file.name);
+  };
+  const upload = h('input', { type: 'file', accept: 'image/*,video/mp4,video/webm,video/quicktime', class: 'sr-only' });
+  upload.addEventListener('change', () => { handleFile(upload.files?.[0]); upload.value = ''; });
   const thumbs = h('div', { class: 'tpl-thumbs', role: 'group', 'aria-label': 'Usar una maqueta del manual como fondo' },
     data.sections.flatMap(sx => sx.modules).filter(m => m.kind === 'showcase' && m.media).map(m =>
       h('button', { type: 'button', class: 'tpl-thumb', 'aria-pressed': 'false', title: m.title, 'aria-label': `Usar ${m.title} como fondo`, onclick: () => setImage(m.media, m.title) }, h('img', { src: m.media, alt: '', loading: 'lazy' }))));
+  // Carpeta de Google Drive
+  const driveBox = h('div', { class: 'tpl-drive' });
+  const driveCfg = () => {
+    const raw = String(data.drive?.folder || '').trim();
+    const id = (raw.match(/folders\/([\w-]+)/) || raw.match(/[?&]id=([\w-]+)/) || [null, raw])[1];
+    return { id, key: String(data.drive?.apiKey || '').trim() };
+  };
+  const loadDrive = async () => {
+    const { id, key } = driveCfg();
+    if (!id || !key) {
+      driveBox.replaceChildren(h('p', { class: 'tpl-help', text: 'Google Drive todavía no está conectado. Se configura desde el editor (pestaña Portada → Google Drive).' }));
+      return;
+    }
+    driveBox.replaceChildren(h('p', { class: 'tpl-help', text: 'Cargando la carpeta de Drive…' }));
+    try {
+      const q = encodeURIComponent(`'${id}' in parents and trashed = false`);
+      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType,thumbnailLink,size)&orderBy=createdTime%20desc&pageSize=60&supportsAllDrives=true&includeItemsFromAllDrives=true&key=${encodeURIComponent(key)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(res.status);
+      const files = ((await res.json()).files || []).filter(f => /^(image|video)\//.test(f.mimeType));
+      if (!files.length) { driveBox.replaceChildren(h('p', { class: 'tpl-help', text: 'La carpeta de Drive no tiene imágenes ni videos todavía.' })); return; }
+      const grid = h('div', { class: 'tpl-thumbs' }, files.map(f => {
+        const isVideo = f.mimeType.startsWith('video/');
+        return h('button', { type: 'button', class: `tpl-thumb${isVideo ? ' is-video' : ''}`, 'aria-pressed': 'false', title: f.name, 'aria-label': `Usar ${f.name} de Drive como fondo${isVideo ? ' (video)' : ''}`, onclick: async e => {
+          const btn = e.currentTarget;
+          if (isVideo && Number(f.size) > VIDEO_MAX_MB * 1024 * 1024) { toast(`Ese video pesa más de ${VIDEO_MAX_MB} MB.`); return; }
+          btn.classList.add('is-loading');
+          try {
+            const r = await fetch(`https://www.googleapis.com/drive/v3/files/${f.id}?alt=media&supportsAllDrives=true&key=${encodeURIComponent(key)}`);
+            if (!r.ok) throw new Error(r.status);
+            const blobUrl = URL.createObjectURL(await r.blob());
+            if (isVideo) await setVideo(blobUrl, f.name, Number(f.size)); else await setImage(blobUrl, f.name);
+          } catch { toast('No se pudo descargar el archivo de Drive. Revisá que la carpeta esté compartida.'); }
+          btn.classList.remove('is-loading');
+        } }, f.thumbnailLink ? h('img', { src: f.thumbnailLink, alt: '', loading: 'lazy', referrerpolicy: 'no-referrer' }) : h('span', { class: 'tpl-thumb-name', text: f.name }));
+      }));
+      driveBox.replaceChildren(grid, h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: 'Actualizar carpeta', onclick: loadDrive }));
+    } catch {
+      driveBox.replaceChildren(h('p', { class: 'tpl-help', text: 'No se pudo leer la carpeta de Drive. Verificá que esté compartida como «Cualquier persona con el enlace» y que la clave sea correcta.' }),
+        h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: 'Reintentar', onclick: loadDrive }));
+    }
+  };
+  // Encuadre, velo y tramo de video
   const imgName = h('span', { class: 'tpl-size' });
-  const zoom = h('input', { type: 'range', min: 100, max: 250, value: 100, id: 'tpl-zoom' });
-  const zoomOut = h('output', { for: 'tpl-zoom', text: '100%' });
-  zoom.addEventListener('input', () => { tpl.zoom = zoom.value / 100; zoomOut.textContent = `${zoom.value}%`; redraw(0); });
-  const shade = h('input', { type: 'range', min: 0, max: 90, value: tpl.shade, id: 'tpl-shade' });
-  const shadeOut = h('output', { for: 'tpl-shade', text: `${tpl.shade}%` });
-  shade.addEventListener('input', () => { tpl.shade = Number(shade.value); shadeOut.textContent = `${shade.value}%`; redraw(0); });
+  const range = (id, min, max, value, unit, onInput) => {
+    const el = h('input', { type: 'range', min, max, value, id });
+    const out = h('output', { for: id, text: `${value}${unit}` });
+    el.addEventListener('input', () => { out.textContent = `${el.value}${unit}`; onInput(Number(el.value)); });
+    return [el, out];
+  };
+  const [zoom, zoomOut] = range('tpl-zoom', 100, 250, 100, '%', v => { tpl.zoom = v / 100; redraw(0); });
+  const [shade, shadeOut] = range('tpl-shade', 0, 90, tpl.shade, '%', v => { tpl.shade = v; redraw(0); });
+  const [clipStart, clipStartOut] = range('tpl-clip-start', 0, 0, 0, ' s', v => { tpl.clipStart = v; if (tpl.video) tpl.video.currentTime = v; });
+  const [clipLen, clipLenOut] = range('tpl-clip-len', CLIP_MIN_S, CLIP_MAX_S, tpl.clipLength, ' s', v => {
+    tpl.clipLength = v;
+    const d = tpl.video?.duration || v;
+    clipStart.max = Math.max(0, Math.floor(d - v)); if (tpl.clipStart > clipStart.max) { tpl.clipStart = Number(clipStart.max); clipStart.value = tpl.clipStart; clipStartOut.textContent = `${tpl.clipStart} s`; }
+    clipStart.disabled = d <= v; syncTools();
+  });
+  const ctrl = (label, id, pair) => h('div', { class: 'control' }, [h('label', { class: 'control-label', for: id, text: label }), h('div', { class: 'range-row' }, pair)]);
+  const durInfo = h('p', { class: 'tpl-help' });
+  const videoTools = h('div', { class: 'tpl-videotools', hidden: true }, [ctrl('Inicio del tramo', 'tpl-clip-start', [clipStart, clipStartOut]), ctrl('Duración de la pieza', 'tpl-clip-len', [clipLen, clipLenOut]), durInfo]);
   const imgTools = h('div', { class: 'tpl-imgtools', hidden: true }, [
-    h('div', { class: 'tpl-imgname' }, [imgName, h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: 'Quitar imagen', onclick: () => { tpl.image = null; tpl.imageName = ''; $$('.tpl-thumb', thumbs).forEach(t => t.setAttribute('aria-pressed', 'false')); redraw(0); } })]),
-    h('div', { class: 'control' }, [h('label', { class: 'control-label', for: 'tpl-zoom', text: 'Zoom' }), h('div', { class: 'range-row' }, [zoom, zoomOut])]),
-    h('div', { class: 'control' }, [h('label', { class: 'control-label', for: 'tpl-shade', text: 'Velo para el texto' }), h('div', { class: 'range-row' }, [shade, shadeOut])]),
-    h('p', { class: 'tpl-help', text: 'Arrastrá la imagen en la vista previa para encuadrarla.' })
+    h('div', { class: 'tpl-imgname' }, [imgName, h('button', { type: 'button', class: 'btn btn-small btn-ghost', text: 'Quitar fondo', onclick: () => { stopVideo(); tpl.image = null; tpl.imageName = ''; markThumbs(''); redraw(0); } })]),
+    ctrl('Zoom', 'tpl-zoom', [zoom, zoomOut]), ctrl('Velo para el texto', 'tpl-shade', [shade, shadeOut]), videoTools,
+    h('p', { class: 'tpl-help', text: 'Arrastrá el fondo en la vista previa para encuadrarlo.' })
   ]);
   // Arrastrar para encuadrar
   let drag = null;
-  canvas.addEventListener('pointerdown', e => { if (!tpl.image) return; drag = { x: e.clientX, y: e.clientY, ox: tpl.ox, oy: tpl.oy }; canvas.setPointerCapture(e.pointerId); });
+  canvas.addEventListener('pointerdown', e => { if (!hasMedia() || exporting) return; drag = { x: e.clientX, y: e.clientY, ox: tpl.ox, oy: tpl.oy }; canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointermove', e => {
     if (!drag) return;
     const r = canvas.getBoundingClientRect();
-    tpl.ox = drag.ox + (e.clientX - drag.x) / r.width; tpl.oy = drag.oy + (e.clientY - drag.y) / r.height;
-    tpl.ox = Math.max(-1, Math.min(1, tpl.ox)); tpl.oy = Math.max(-1, Math.min(1, tpl.oy));
+    tpl.ox = Math.max(-1, Math.min(1, drag.ox + (e.clientX - drag.x) / r.width));
+    tpl.oy = Math.max(-1, Math.min(1, drag.oy + (e.clientY - drag.y) / r.height));
     redraw(0);
   });
   ['pointerup', 'pointercancel'].forEach(ev => canvas.addEventListener(ev, () => { drag = null; }));
-  const savePNG = () => canvas.toBlob(blob => {
-    const url = URL.createObjectURL(blob); const a = h('a', { href: url, download: `crisger-${tpl.format}-${tpl.layout}-${tpl.style}.png` });
-    document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1500); toast('Pieza descargada');
-  }, 'image/png');
+  // Descargas
+  const fileBase = () => `crisger-${tpl.format}-${tpl.layout}-${tpl.style}`;
+  const saveBlob = (blob, name) => { const url = URL.createObjectURL(blob); const a = h('a', { href: url, download: name }); document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); };
+  const savePNG = () => canvas.toBlob(blob => { saveBlob(blob, `${fileBase()}.png`); toast(tpl.video ? 'Cuadro actual descargado en PNG' : 'Pieza descargada'); }, 'image/png');
+  // MP4 solo si el navegador codifica en H.264 (el formato que aceptan todas las redes); si no, WebM
+  const pickMime = () => ['video/mp4;codecs=avc1.640028', 'video/mp4;codecs=avc1.4D401F', 'video/mp4;codecs=avc1.42E01E', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'].find(t => window.MediaRecorder && MediaRecorder.isTypeSupported(t));
+  const exportVideo = async () => {
+    const v = tpl.video; if (!v || exporting) return;
+    const mime = pickMime();
+    if (!mime || !canvas.captureStream) { toast('Este navegador no permite exportar video. Probá con Chrome o Edge actualizados.'); return; }
+    exporting = true; cancelAnimationFrame(loopId); exportBtn.disabled = quickVideo.disabled = true;
+    const label = exportBtn.lastChild;
+    const F = TPL_FORMATS[tpl.format];
+    // Tasa de bits calculada para que la pieza no supere el tope de peso
+    const bits = Math.min(8_000_000, Math.floor(OUT_MAX_MB * 8 * 1024 * 1024 / tpl.clipLength * 0.9));
+    try {
+      v.pause(); v.currentTime = tpl.clipStart;
+      await new Promise(r => { v.onseeked = () => { v.onseeked = null; r(); }; });
+      await drawTemplate(canvas);
+      const stream = canvas.captureStream(30);
+      const rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: bits });
+      const chunks = [];
+      rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+      const done = new Promise(r => { rec.onstop = r; });
+      rec.start(250);
+      await v.play();
+      const t0 = performance.now(), total = tpl.clipLength * 1000;
+      await new Promise(resolve => {
+        const frame = async () => {
+          const el = performance.now() - t0;
+          label.textContent = `Exportando… ${Math.min(99, Math.round(el / total * 100))}%`;
+          await drawTemplate(canvas);
+          if (el >= total || v.ended) resolve(); else requestAnimationFrame(frame);
+        };
+        requestAnimationFrame(frame);
+      });
+      rec.stop(); await done; stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(chunks, { type: mime.split(';')[0] });
+      const ext = mime.startsWith('video/mp4') ? 'mp4' : 'webm';
+      saveBlob(blob, `${fileBase()}.${ext}`);
+      toast(`Video exportado: ${(blob.size / 1024 / 1024).toFixed(1)} MB · ${tpl.clipLength} s · ${F.size}${ext === 'webm' ? ' · formato WebM' : ''}`);
+    } catch { toast('No se pudo exportar el video.'); }
+    exporting = false; exportBtn.disabled = quickVideo.disabled = false; label.textContent = 'Exportar video';
+    v.currentTime = tpl.clipStart; startLoop();
+  };
   const download = h('button', { type: 'button', class: 'btn btn-primary', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG']);
+  const exportBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
+  const quickVideo = h('button', { type: 'button', class: 'btn btn-small btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
   const step = (n, title, children) => h('div', { class: 'tpl-step' }, [h('span', { class: 'tpl-step-n', text: n }), h('div', { class: 'tpl-step-body' }, [h('strong', { class: 'tpl-step-title', text: title }), ...children])]);
   wrap.append(h('article', { class: 'kit-card tpl-card' }, [
     h('div', { class: 'tpl-controls' }, [
@@ -1056,18 +1213,22 @@ function renderTemplates() {
         segmented('Estructura', TPL_LAYOUTS, tpl.layout, v => { tpl.layout = v; redraw(0); }),
         segmented('Color', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), tpl.style, v => { tpl.style = v; redraw(0); })
       ]),
-      step('2', 'Imagen de fondo (opcional)', [
-        h('div', { class: 'tpl-upload' }, [h('label', { class: 'btn btn-small btn-outline file-button' }, [icon(ICONS.upload), 'Subir imagen', upload]), h('span', { class: 'tpl-help', text: 'o elegí una maqueta:' })]),
-        thumbs, imgTools
+      step('2', 'Fondo: imagen o video (opcional)', [
+        h('div', { class: 'tpl-upload' }, [h('label', { class: 'btn btn-small btn-outline file-button' }, [icon(ICONS.upload), 'Subir imagen o video', upload]),
+          h('span', { class: 'tpl-help', text: `Videos de hasta ${VIDEO_MAX_MB} MB; se exportan tramos de ${CLIP_MIN_S} a ${CLIP_MAX_S} s.` })]),
+        h('span', { class: 'control-label', text: 'Maquetas del manual' }), thumbs,
+        h('span', { class: 'control-label', text: 'Carpeta de Google Drive' }), driveBox,
+        imgTools
       ]),
-      step('3', 'Textos', [
+      step('3', 'Textos y logo', [
         input('Etiqueta', 'tag'), input('Titular', 'title'), input('Texto', 'text', true), input('Botón (opcional)', 'cta', false, 'Por ejemplo: Consultanos'),
-        h('label', { class: 'tpl-check', for: 'tpl-pattern' }, [patternToggle, 'Trama del isotipo'])
+        h('div', { class: 'tpl-checks' }, [check('Mostrar logo', 'showLogo'), check('Trama del isotipo', 'pattern')])
       ]),
-      h('div', { class: 'tpl-actions' }, [download, status])
+      h('div', { class: 'tpl-actions' }, [download, exportBtn, status])
     ]),
-    h('div', { class: 'tpl-preview' }, [canvas, h('button', { type: 'button', class: 'btn btn-small btn-primary tpl-quick', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG'])])
+    h('div', { class: 'tpl-preview' }, [canvas, h('div', { class: 'tpl-quick' }, [h('button', { type: 'button', class: 'btn btn-small btn-primary', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG']), quickVideo])])
   ]));
+  loadDrive();
   // Firma de correo
   let sig = { name: '', role: '', phone: '', mail: '' };
   try { sig = { ...sig, ...JSON.parse(localStorage.getItem('crisger-firma') || '{}') }; } catch { /* sin datos guardados */ }
@@ -1431,6 +1592,9 @@ function renderEditor() {
     field(k, 'Hoja membretada (Word)', data.kit.letterheadDocx, v => edit(() => { data.kit.letterheadDocx = v.trim(); }));
     field(k, 'Hoja membretada (PDF)', data.kit.letterheadPdf, v => edit(() => { data.kit.letterheadPdf = v.trim(); }));
     field(k, 'Manual en PDF', data.kit.manualPdf, v => edit(() => { data.kit.manualPdf = v.trim(); }));
+    const gd = group(host, 'Google Drive (fondos para plantillas)');
+    field(gd, 'Carpeta de Drive (enlace o ID)', data.drive.folder, v => edit(() => { data.drive.folder = v.trim(); }, 600), { help: 'La carpeta debe estar compartida como «Cualquier persona con el enlace».' });
+    field(gd, 'Clave de API de Google', data.drive.apiKey, v => edit(() => { data.drive.apiKey = v.trim(); }, 600), { help: 'Clave restringida a la API de Google Drive y al dominio del sitio. Ver README.' });
   }
 
   if (tab === 'section') {
