@@ -1,0 +1,424 @@
+{
+  "brand": "CRISGER",
+  "descriptor": "Seguridad Industrial",
+  "version": "1.0 · 2025",
+  "heroTitle": "Una identidad que protege.",
+  "heroText": "El sistema visual de CRISGER reúne criterio, claridad y carácter para acompañar a la industria en cada punto de contacto.",
+  "sections": [
+    {
+      "id": "esencia",
+      "kicker": "01 · Esencia",
+      "title": "Una marca que protege",
+      "lead": "CRISGER combina conocimiento técnico, respuesta ágil y cercanía para cuidar a las personas en sus entornos de trabajo.",
+      "modules": [
+        {
+          "id": "historia",
+          "title": "De dónde venimos",
+          "body": "CRISGER nació en San Nicolás de los Arroyos para ayudar a empresas e industrias a cuidar a sus equipos. Con elementos de protección personal, indumentaria laboral, stock permanente, logística propia y asesoramiento técnico, construyó una presencia sólida en la región. La ampliación del local y esta nueva identidad reflejan una empresa que crece sin perder su compromiso original.",
+          "media": "media/mockup-fachada.webp",
+          "note": "",
+          "items": [
+            "Proteger",
+            "Responder",
+            "Avanzar"
+          ],
+          "kind": "essence"
+        }
+      ],
+      "navLabel": "Esencia",
+      "theme": "light",
+      "note": ""
+    },
+    {
+      "id": "marca",
+      "kicker": "02 · Logo",
+      "title": "Una firma reconocible",
+      "lead": "Una sola firma, varias configuraciones. Elegí la versión y el contraste adecuados sin alterar su construcción.",
+      "modules": [
+        {
+          "id": "logo",
+          "title": "Sistema de logos",
+          "body": "El isotipo reinterpreta la C en una estructura modular de bordes redondeados. Junto al logotipo forma la firma principal. El selector reúne las versiones principal, vertical, compacta, logotipo e isotipo: elegí según el espacio disponible y mantené siempre las proporciones. Sobre fondos claros u oscuros, usá la versión de mayor contraste; sobre naranja, la monocromática.",
+          "media": "media/logo-crisger.png",
+          "note": "",
+          "items": [],
+          "kind": "logo"
+        },
+        {
+          "id": "proteccion",
+          "title": "Espacio de protección",
+          "body": "Dejá aire libre alrededor del logo. Textos, bordes e imágenes no deben invadir ese espacio. Esta regla mantiene la firma visible aun en piezas con mucha información. Elegí una versión para ver su zona de resguardo.",
+          "media": "media/clearspace.webp",
+          "note": "La zona exacta se ilustra en el manual original. No hay una medida numérica única definida para todas las versiones.",
+          "items": [],
+          "kind": "clearspace"
+        },
+        {
+          "id": "errores",
+          "title": "Usos incorrectos",
+          "body": "La firma mantiene su color, forma, proporción y orientación. Estos ejemplos muestran alteraciones que deben evitarse; si el logo no funciona en una pieza, elegí otra versión o cambiá su ubicación.",
+          "media": "",
+          "note": "",
+          "items": [
+            "Cambiar el color",
+            "Agregar contorno",
+            "Modificar las formas",
+            "Dar volumen",
+            "Agregar sombra",
+            "Reflejar",
+            "Comprimir",
+            "Expandir",
+            "Rotar"
+          ],
+          "kind": "incorrect"
+        },
+        {
+          "id": "logo-en-uso",
+          "title": "Vehículo de reparto",
+          "body": "Una presencia de marca visible durante cada recorrido.",
+          "media": "media/mockup-vehiculo.webp",
+          "note": "Maqueta conceptual",
+          "items": [],
+          "kind": "feature",
+          "category": "Transporte"
+        }
+      ],
+      "navLabel": "Logo",
+      "theme": "white",
+      "note": ""
+    },
+    {
+      "id": "recursos",
+      "kicker": "03 · Recursos",
+      "title": "Un lenguaje propio",
+      "lead": "El isotipo también construye un lenguaje visual reconocible a través de patrones.",
+      "modules": [
+        {
+          "id": "patrones",
+          "title": "Patrones",
+          "body": "Tres composiciones construidas con el isotipo: una trama técnica, un ritmo alternado y una escala más expresiva. Deslizá para ver cada patrón. Usalos como fondos o acentos sin comprometer la legibilidad del contenido.",
+          "media": "",
+          "note": "",
+          "items": [
+            "Trama técnica",
+            "Ritmo alternado",
+            "Escala expresiva"
+          ],
+          "kind": "patterns"
+        },
+        {
+          "id": "recursos-en-uso",
+          "title": "Packaging",
+          "body": "La combinación de negro y naranja destaca en depósito y distribución.",
+          "media": "media/mockup-packaging.webp",
+          "note": "Maqueta conceptual",
+          "items": [],
+          "kind": "feature",
+          "category": "Packaging"
+        }
+      ],
+      "navLabel": "Recursos",
+      "theme": "dark",
+      "note": ""
+    },
+    {
+      "id": "color",
+      "kicker": "04 · Color",
+      "title": "Energía con control",
+      "lead": "Una paleta breve permite construir piezas intensas, sobrias y consistentes.",
+      "modules": [
+        {
+          "id": "paleta",
+          "title": "Paleta",
+          "body": "El naranja de CRISGER concentra la energía de la marca. Negro, grises y blancos ordenan la información y equilibran su presencia. La composición muestra proporciones de uso y dos degradados de naranja a negro. Tocá un color para copiar su HEX.",
+          "media": "media/palette.webp",
+          "note": "",
+          "items": [],
+          "kind": "palette"
+        },
+        {
+          "id": "tonos",
+          "title": "Tonos y matices",
+          "body": "Una misma base puede generar variantes más claras al mezclarse con blanco y más profundas al mezclarse con negro. Seleccioná un color y ajustá la intensidad para comparar ambas direcciones. Usá estas variaciones como apoyo; el color base conserva el protagonismo.",
+          "media": "",
+          "note": "",
+          "items": [],
+          "kind": "tints"
+        },
+        {
+          "id": "combinaciones",
+          "title": "Contraste y jerarquía",
+          "body": "El contraste organiza la lectura: fondo, titular, texto y acento cumplen roles distintos. Cambiá entre aplicaciones claras, oscuras, naranjas y con degradado para comprobar cómo se conserva la jerarquía.",
+          "media": "",
+          "note": "",
+          "items": [
+            "Seguridad industrial",
+            "La seguridad se hace visible.",
+            "Una identidad que ordena la información y dirige la mirada hacia lo esencial.",
+            "Protección en cada decisión"
+          ],
+          "kind": "contrast"
+        },
+        {
+          "id": "digital",
+          "title": "En pantalla y en papel",
+          "body": "En sitios y aplicaciones, los fondos negros, blancos o grises sostienen la experiencia; el naranja funciona como acento. En redes y material impreso pueden variar las proporciones, siempre dentro de la paleta y con una lectura clara.",
+          "media": "media/mockup-senalizacion.webp",
+          "note": "",
+          "items": [],
+          "kind": "standard"
+        }
+      ],
+      "navLabel": "Colores",
+      "theme": "light",
+      "note": ""
+    },
+    {
+      "id": "tipografia",
+      "kicker": "05 · Tipografía",
+      "title": "La voz visual",
+      "lead": "Cada fuente tiene un papel definido. Los especímenes se componen directamente en la web con las tipografías de la marca.",
+      "modules": [
+        {
+          "id": "tipo-logo",
+          "title": "La tipografía del logo",
+          "body": "El logotipo utiliza una construcción basada en Microgramma Extended Bold. Forma parte de la firma de marca: no debe recomponerse como texto corriente ni estirarse. Para aplicarlo, utilizá el archivo del logo.",
+          "media": "",
+          "note": "",
+          "items": [
+            "Uso principal: logotipo",
+            "Peso: Bold",
+            "Tipografía reservada a la marca"
+          ],
+          "kind": "type-logo"
+        },
+        {
+          "id": "tipo-display",
+          "title": "Bai Jamjuree",
+          "body": "Bai Jamjuree define titulares, navegación y etiquetas. Usá Bold para mensajes principales y SemiBold para niveles secundarios. Su construcción geométrica aporta presencia sin sacrificar claridad.",
+          "media": "",
+          "note": "",
+          "items": [],
+          "kind": "type-display"
+        },
+        {
+          "id": "tipo-body",
+          "title": "Inter",
+          "body": "Inter se reserva para los párrafos. Su dibujo neutral facilita la lectura y acompaña la personalidad de Bai Jamjuree sin competir con ella.",
+          "media": "",
+          "note": "",
+          "items": [],
+          "kind": "type-body"
+        },
+        {
+          "id": "jerarquia",
+          "title": "Jerarquía flexible",
+          "body": "La jerarquía surge de diferencias visibles de tamaño y peso. Bai Jamjuree Bold encabeza los niveles principales; SemiBold sostiene subtítulos, mientras Inter queda reservado a los párrafos. Las medidas se adaptan al soporte sin perder esa relación.",
+          "media": "",
+          "note": "Los tamaños son ejemplos del manual original, no valores CSS obligatorios para todas las pantallas.",
+          "items": [
+            "Título principal · H1 · Bai Jamjuree Bold / 80 pt — Protección industrial",
+            "Subtítulo · H2 · Bai Jamjuree Bold / 50 pt — Seguridad para cada equipo",
+            "Título menor · H3 · Bai Jamjuree SemiBold / 31 pt — Equipamiento para cada tarea",
+            "Destacado · Bai Jamjuree SemiBold / 19 pt — Cuidar a quienes hacen",
+            "Párrafo · Inter Regular / 12 pt — Asesoramiento y productos para entornos de trabajo más seguros."
+          ],
+          "kind": "type-scale"
+        },
+        {
+          "id": "tipografia-en-uso",
+          "title": "Catálogo impreso",
+          "body": "La información técnica convive con una identidad editorial contundente.",
+          "media": "media/mockup-catalogo.webp",
+          "note": "Maqueta conceptual",
+          "items": [],
+          "kind": "feature",
+          "category": "Editorial"
+        }
+      ],
+      "navLabel": "Tipografía",
+      "theme": "white",
+      "note": ""
+    },
+    {
+      "id": "aplicaciones",
+      "kicker": "06 · Aplicaciones",
+      "title": "La marca en acción",
+      "lead": "Una selección de usos que muestra cómo el sistema se adapta a espacios, soportes y medios.",
+      "modules": [
+        {
+          "id": "fachada",
+          "title": "Fachada",
+          "body": "La marca acompaña el acceso a un espacio dedicado a la protección industrial.",
+          "media": "media/mockup-fachada.webp",
+          "category": "Arquitectura",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "chaleco",
+          "title": "Chaleco de seguridad",
+          "body": "El naranja identifica la prenda sin competir con su función de alta visibilidad.",
+          "media": "media/mockup-chaleco.webp",
+          "category": "Indumentaria",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "casco-guantes",
+          "title": "Casco y guantes",
+          "body": "Una aplicación precisa sobre superficies de uso intensivo.",
+          "media": "media/mockup-casco-guantes.webp",
+          "category": "Equipamiento",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "calzado",
+          "title": "Calzado de seguridad",
+          "body": "Materiales resistentes, detalles de marca y una presentación clara.",
+          "media": "media/mockup-calzado.webp",
+          "category": "Equipamiento",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "indumentaria",
+          "title": "Indumentaria técnica",
+          "body": "El sistema se adapta a las prendas de trabajo y mantiene su reconocimiento.",
+          "media": "media/mockup-indumentaria.webp",
+          "category": "Indumentaria",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "packaging",
+          "title": "Packaging",
+          "body": "La combinación de negro y naranja destaca en depósito y distribución.",
+          "media": "media/mockup-packaging.webp",
+          "category": "Packaging",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "vehiculo",
+          "title": "Vehículo de reparto",
+          "body": "Una presencia de marca visible durante cada recorrido.",
+          "media": "media/mockup-vehiculo.webp",
+          "category": "Transporte",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "senalizacion",
+          "title": "Señalización",
+          "body": "El lenguaje visual ayuda a orientar a las personas en el entorno industrial.",
+          "media": "media/mockup-senalizacion.webp",
+          "category": "Espacios",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "stand",
+          "title": "Stand comercial",
+          "body": "Una experiencia de marca consistente en ferias y encuentros.",
+          "media": "media/mockup-stand.webp",
+          "category": "Espacios",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        },
+        {
+          "id": "catalogo",
+          "title": "Catálogo impreso",
+          "body": "La información técnica convive con una identidad editorial contundente.",
+          "media": "media/mockup-catalogo.webp",
+          "category": "Editorial",
+          "kind": "showcase",
+          "note": "",
+          "items": []
+        }
+      ],
+      "navLabel": "Aplicaciones",
+      "theme": "dark",
+      "note": "Las imágenes son maquetas conceptuales creadas para ilustrar el sistema de marca. No son fotografías de productos reales."
+    }
+  ],
+  "palette": [
+    {
+      "name": "Naranja CRISGER",
+      "hex": "#FE5000",
+      "rgb": "254, 80, 0",
+      "cmyk": "0, 78, 94, 0"
+    },
+    {
+      "name": "Negro",
+      "hex": "#000000",
+      "rgb": "0, 0, 0",
+      "cmyk": "60, 40, 40, 100 (negro enriquecido sugerido)"
+    },
+    {
+      "name": "Grafito",
+      "hex": "#44464B",
+      "rgb": "68, 70, 75",
+      "cmyk": "68, 57, 49, 49"
+    },
+    {
+      "name": "Gris",
+      "hex": "#CCCCCC",
+      "rgb": "204, 204, 204",
+      "cmyk": "23, 17, 18, 1"
+    },
+    {
+      "name": "Blanco cálido",
+      "hex": "#F2F2F2",
+      "rgb": "242, 242, 242",
+      "cmyk": "6, 4, 5, 0"
+    },
+    {
+      "name": "Blanco",
+      "hex": "#FFFFFF",
+      "rgb": "255, 255, 255",
+      "cmyk": "0, 0, 0, 0"
+    }
+  ],
+  "location": "San Nicolás de los Arroyos",
+  "footerText": "Proteger. Responder. Avanzar.",
+  "logos": {
+    "principal": {
+      "claro": "media/logo-crisger.png",
+      "oscuro": "media/logo-crisger-white.png",
+      "naranja": "media/logo-crisger-mono-white.png"
+    },
+    "vertical": {
+      "claro": "media/logo-vertical.png",
+      "oscuro": "media/logo-vertical-white.png",
+      "naranja": "media/logo-vertical-mono-white.png"
+    },
+    "compacto": {
+      "claro": "media/logo-compacto.png",
+      "oscuro": "media/logo-compacto-white.png",
+      "naranja": "media/logo-compacto-mono-white.png"
+    },
+    "logotipo": {
+      "claro": "media/logotipo.png",
+      "oscuro": "media/logotipo-white.png",
+      "naranja": "media/logotipo-mono-white.png"
+    },
+    "isotipo": {
+      "claro": "media/isotipo.png",
+      "oscuro": "media/isotipo-white.png",
+      "naranja": "media/isotipo-mono-white.png"
+    }
+  },
+  "heroCta": "Explorar el manual",
+  "heroLabel": "Manual de marca"
+}

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>CRISGER · Manual de marca</title>
+  <meta name="description" content="Manual de marca interactivo de CRISGER · Seguridad Industrial: logo, recursos, colores, tipografía y aplicaciones.">
+  <link rel="icon" type="image/png" href="media/isotipo.png">
+  <link rel="preload" href="fonts/bai-bold.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="fonts/inter-variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+  <div id="progress" class="progress" role="presentation"><span></span></div>
+
+  <header class="header" id="header">
+    <div class="header-bar">
+      <a href="#inicio" class="header-logo" aria-label="CRISGER · Ir al inicio">
+        <img id="navLogo" src="media/logo-crisger-white.png" alt="CRISGER" width="730" height="120">
+      </a>
+      <nav id="siteNav" class="site-nav" aria-label="Secciones del manual">
+        <ul id="navList"></ul>
+      </nav>
+      <span class="header-meta"><span id="navLabel">Manual de marca</span> <b id="navVersion"></b></span>
+    </div>
+  </header>
+
+  <main id="main" tabindex="-1">
+    <p class="loading" id="loading">Cargando el manual…</p>
+  </main>
+
+  <footer class="footer" id="footer">
+    <div class="footer-inner">
+      <img id="footerLogo" src="media/logo-crisger-white.png" alt="CRISGER" width="730" height="120" loading="lazy">
+      <p id="footerText"></p>
+      <div class="footer-meta">
+        <span id="footerVersion"></span>
+        <span id="footerLocation"></span>
+      </div>
+      <button id="editEntry" class="btn btn-outline footer-edit" type="button">
+        Editar contenido <span id="editBadge" class="edit-badge" hidden>Cambios locales</span>
+      </button>
+    </div>
+  </footer>
+
+  <button id="backToTop" class="back-to-top" type="button" aria-label="Volver al inicio" title="Volver al inicio">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+
+  <!-- Visor de imágenes -->
+  <dialog id="lightbox" class="lightbox" aria-labelledby="lightboxTitle">
+    <div class="lightbox-top">
+      <img class="lightbox-logo" id="lightboxLogo" src="media/logo-crisger-white.png" alt="CRISGER">
+      <span id="lightboxCount" class="lightbox-count" aria-live="polite"></span>
+      <button id="lightboxClose" class="icon-btn" type="button" aria-label="Cerrar visor">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-body">
+      <button id="lightboxPrev" class="icon-btn lightbox-arrow prev" type="button" aria-label="Imagen anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <figure class="lightbox-figure">
+        <img id="lightboxImg" alt="">
+      </figure>
+      <button id="lightboxNext" class="icon-btn lightbox-arrow next" type="button" aria-label="Imagen siguiente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <div class="lightbox-caption">
+      <span id="lightboxCategory" class="tag"></span>
+      <h2 id="lightboxTitle"></h2>
+      <p id="lightboxText"></p>
+    </div>
+  </dialog>
+
+  <!-- Editor de contenido -->
+  <dialog id="editor" class="editor" aria-labelledby="editorTitle">
+    <div class="editor-top">
+      <div>
+        <small>Gestión de contenido</small>
+        <h2 id="editorTitle">Editar manual</h2>
+      </div>
+      <button id="closeEditor" class="icon-btn" type="button" aria-label="Cerrar editor">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="editor-tabs" role="tablist" aria-label="Áreas del editor">
+      <button type="button" role="tab" data-tab="general">Portada</button>
+      <button type="button" role="tab" data-tab="section">Secciones</button>
+      <button type="button" role="tab" data-tab="module">Bloques</button>
+      <button type="button" role="tab" data-tab="palette">Colores</button>
+      <button type="button" role="tab" data-tab="logos">Logos</button>
+    </div>
+    <div class="editor-scroll">
+      <div class="notice">
+        Los cambios se guardan solo en este navegador. Para publicarlos, exportá <code>data.json</code> y reemplazá el archivo en el repositorio de GitHub.
+      </div>
+      <div id="editorFields" role="tabpanel"></div>
+    </div>
+    <div class="editor-actions">
+      <button id="exportBtn" class="btn btn-primary" type="button">Exportar data.json</button>
+      <label class="btn btn-outline file-button">Importar JSON<input type="file" id="importFile" accept=".json,application/json"></label>
+      <button id="resetBtn" class="btn btn-ghost" type="button">Restaurar versión publicada</button>
+    </div>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="app.js" defer></script>
+</body>
+</html>
