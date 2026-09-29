@@ -249,7 +249,7 @@ function render() {
   $('#footerLocation').textContent = [data.descriptor, data.location].filter(Boolean).join(' · ');
 
   const list = $('#navList');
-  list.replaceChildren(...data.sections.map(s => h('li', {}, h('a', { href: `#${s.id}`, text: s.navLabel || s.title }))), h('li', { class: 'nav-indicator', 'aria-hidden': 'true' }));
+  list.replaceChildren(...navTargets().map(([id, label]) => h('li', {}, h('a', { href: `#${id}`, text: label }))), h('li', { class: 'nav-indicator', 'aria-hidden': 'true' }));
   activeId = null;
 
   const main = $('#main');
@@ -1411,15 +1411,18 @@ function measureHeader() {
   document.documentElement.style.setProperty('--header-h', `${$('#header').offsetHeight}px`);
 }
 let activeId = null;
+// Secciones de la navegación: las del manual más el kit de descargas.
+const navTargets = () => [...(data?.sections || []).map(s => [s.id, s.navLabel || s.title]), ...(data?.kit ? [['kit', 'Kit']] : [])];
 function updateActiveNav() {
   const offset = $('#header').offsetHeight + window.innerHeight * 0.3;
+  const targets = navTargets();
   let current = null;
-  for (const s of data?.sections || []) {
-    const node = document.getElementById(s.id);
-    if (node && node.getBoundingClientRect().top <= offset) current = s.id;
+  for (const [id] of targets) {
+    const node = document.getElementById(id);
+    if (node && node.getBoundingClientRect().top <= offset) current = id;
   }
   const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-  if (atBottom && data?.sections.length) current = data.sections.at(-1).id;
+  if (atBottom && targets.length) current = targets.at(-1)[0];
   if (current === activeId) return;
   activeId = current;
   requestAnimationFrame(moveIndicator);
