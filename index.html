@@ -33,7 +33,7 @@
       if (t === 'dark' || (t === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark');
     } catch (e) {}
   </script>
-  <link rel="stylesheet" href="style.css?v=2026-09-29-2">
+  <link rel="stylesheet" href="style.css?v=2026-09-29-3">
 </head>
 <body>
   <a class="skip-link" href="#main">Saltar al contenido</a>
@@ -49,6 +49,9 @@
       </nav>
       <div class="header-right">
         <span class="header-meta"><span id="navLabel">Manual de marca</span> <b id="navVersion"></b></span>
+        <a id="createBtn" class="create-btn" href="#generador" title="Ir al generador de piezas">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Crear pieza</span>
+        </a>
         <button id="searchBtn" class="search-btn" type="button" aria-label="Buscar en el manual" aria-keyshortcuts="Control+K /" title="Buscar en el manual">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8"/></svg>
           <span class="search-btn-label">Buscar</span> <kbd id="searchKey">Ctrl K</kbd>
@@ -167,6 +170,6 @@
   </dialog>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="app.js?v=2026-09-29-2" defer></script>
+  <script src="app.js?v=2026-09-29-3" defer></script>
 </body>
 </html>
