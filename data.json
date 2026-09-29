@@ -75,7 +75,15 @@
       ],
       "navLabel": "Logo",
       "theme": "white",
-      "note": ""
+      "note": "",
+      "checklist": [
+        "Usé un archivo original del kit (SVG o PNG), no una captura ni un logo redibujado.",
+        "Elegí la versión según el espacio: principal, vertical, compacta, logotipo o isotipo.",
+        "Sobre fondo claro u oscuro, la versión de mayor contraste; sobre naranja, la monocromática.",
+        "El logo mantiene sus proporciones: no está estirado, comprimido, rotado ni reflejado.",
+        "No tiene sombras, contornos, volumen ni cambios de color.",
+        "Ningún texto, borde o imagen invade el espacio de protección."
+      ]
     },
     {
       "id": "color",
@@ -118,7 +126,14 @@
       ],
       "navLabel": "Colores",
       "theme": "light",
-      "note": ""
+      "note": "",
+      "checklist": [
+        "El naranja se especifica como #FE5000 en pantalla y CMYK 0, 78, 94, 0 en impresión.",
+        "Pedí una prueba de color antes de imprimir tiradas grandes.",
+        "El naranja funciona como acento y los neutros ordenan el resto de la pieza.",
+        "Los textos tienen contraste suficiente sobre su fondo (revisalo en el comparador).",
+        "Los tonos y matices acompañan, pero no reemplazan al naranja original."
+      ]
     },
     {
       "id": "tipografia",
@@ -175,7 +190,14 @@
       ],
       "navLabel": "Tipografía",
       "theme": "white",
-      "note": ""
+      "note": "",
+      "checklist": [
+        "Titulares en Bai Jamjuree Bold y subtítulos en SemiBold.",
+        "Párrafos y textos largos en Inter Regular.",
+        "El nombre en el logo sale siempre del archivo del logo, nunca se escribe con una fuente.",
+        "Titular, subtítulo y texto se distinguen claramente por tamaño y peso.",
+        "Las tipografías son las del kit, no otras parecidas."
+      ]
     },
     {
       "id": "recursos",
@@ -198,7 +220,12 @@
       ],
       "navLabel": "Recursos",
       "theme": "light",
-      "note": ""
+      "note": "",
+      "checklist": [
+        "Los patrones usan el isotipo original, sin rotarlo ni deformarlo.",
+        "El patrón queda de fondo y no compite con el titular ni con el logo.",
+        "El texto sobre el patrón se lee sin esfuerzo."
+      ]
     },
     {
       "id": "aplicaciones",
@@ -309,7 +336,88 @@
       ],
       "navLabel": "Aplicaciones",
       "theme": "dark",
-      "note": "Las imágenes son maquetas conceptuales creadas para ilustrar el sistema de marca; no son fotografías de productos reales. Filtrá por categoría y tocá una imagen para ampliarla."
+      "note": "Las imágenes son maquetas conceptuales creadas para ilustrar el sistema de marca; no son fotografías de productos reales. Filtrá por categoría y tocá una imagen para ampliarla.",
+      "checklist": [
+        "La pieza usa la paleta, las tipografías y el logo del manual.",
+        "En indumentaria y señalética, el logo se ve completo y legible a la distancia de uso.",
+        "El proveedor recibió los archivos vectoriales del kit.",
+        "Aprobé una prueba digital o física antes de producir."
+      ]
+    },
+    {
+      "id": "voz",
+      "kicker": "07 · Voz e imagen",
+      "navLabel": "Voz",
+      "theme": "white",
+      "note": "",
+      "title": "Cómo habla y cómo se ve",
+      "lead": "La identidad no termina en el logo. Las palabras, las fotos y los íconos también cuentan quién es Crisger: una marca técnica, cercana y que responde.",
+      "modules": [
+        {
+          "id": "tono",
+          "kind": "dos",
+          "title": "Tono de voz",
+          "media": "",
+          "note": "Ejemplo: «Tenemos stock y te lo llevamos. Si no sabés qué casco elegir, te asesoramos».",
+          "body": "Crisger habla como un asesor que conoce el trabajo en planta: claro, directo y cercano. Explica lo necesario para decidir bien, sin alarmar ni exagerar.",
+          "items": [
+            "Sí: Frases cortas y claras, que van al punto.",
+            "Sí: Voseo cercano y respetuoso: «Consultanos», «Elegí el talle».",
+            "Sí: Explicar el porqué técnico cuando ayuda a decidir.",
+            "Sí: Nombrar productos y normas con precisión.",
+            "No: Mensajes alarmistas o de miedo («¡Peligro mortal!»).",
+            "No: Siglas o tecnicismos sin explicar.",
+            "No: Mayúsculas sostenidas o signos de exclamación de más.",
+            "No: Promesas absolutas como «riesgo cero» o «100 % seguro»."
+          ]
+        },
+        {
+          "id": "fotografia",
+          "kind": "dos",
+          "title": "Fotografía",
+          "media": "media/mockup-indumentaria-logo.webp",
+          "note": "",
+          "body": "Las imágenes muestran personas reales, trabajando con su equipo bien colocado. La luz es natural o cálida y el naranja aparece en prendas, señales o detalles, sin forzarlo.",
+          "items": [
+            "Sí: Personas en situación real de trabajo, con el equipo de protección completo.",
+            "Sí: Luz natural o cálida y el naranja presente en detalles.",
+            "Sí: Encuadres limpios que dejen aire para el texto y el logo.",
+            "Sí: Productos sobre fondos neutros: blanco, gris claro o negro.",
+            "No: Situaciones de riesgo o personas sin el equipo adecuado.",
+            "No: Filtros saturados, virajes de color o fotos genéricas de banco de imágenes.",
+            "No: Fondos recargados que compitan con el logo.",
+            "No: El logo sobre zonas de la foto con poco contraste."
+          ]
+        },
+        {
+          "id": "iconografia",
+          "kind": "icons",
+          "title": "Iconografía",
+          "media": "",
+          "body": "Íconos de trazo en una grilla de 24 px, con trazo de 2 px y terminaciones redondeadas: la misma lógica de bordes suaves del isotipo. Se usan en negro, blanco o grafito; el naranja se reserva para destacar un solo ícono por pieza.",
+          "note": "Set base de referencia. Para nuevos íconos, mantené la grilla, el grosor y las esquinas redondeadas.",
+          "items": [
+            "Casco",
+            "Guantes",
+            "Calzado",
+            "Chaleco",
+            "Protección ocular",
+            "Protección auditiva",
+            "Protección",
+            "Envío",
+            "Stock",
+            "Asesoramiento",
+            "Teléfono",
+            "Ubicación"
+          ]
+        }
+      ],
+      "checklist": [
+        "Los textos usan voseo, frases cortas y un tono cercano.",
+        "No hay promesas absolutas ni mensajes alarmistas.",
+        "Las fotos muestran el equipo de protección bien colocado.",
+        "Los íconos son de trazo, con un solo acento naranja por pieza."
+      ]
     }
   ],
   "palette": [
@@ -382,7 +490,7 @@
   "heroCta": "Explorar el manual",
   "heroLabel": "Manual de marca",
   "kit": {
-    "kicker": "Descargas",
+    "kicker": "08 · Descargas",
     "title": "Kit de marca",
     "lead": "Todo lo necesario para aplicar la identidad en web, impresos, señalética e indumentaria, listo para descargar.",
     "zip": "media/descargas/CRISGER-logos.zip",

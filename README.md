@@ -24,11 +24,25 @@ README.md
 5. **Tipografía**: el lettering del logo mediante su archivo original, Bai Jamjuree en Regular, SemiBold y Bold, Inter para párrafos y una jerarquía H1 · H2 · H3 · destacado · párrafo.
 6. **Recursos**: carrusel con dos patrones construidos con el isotipo real (Trama técnica y Ritmo alternado). Se recorre deslizando, con flechas, con puntos o con el teclado.
 7. **Aplicaciones**: una introducción sobre cómo se aplica la identidad en pantalla y en soportes físicos, y la galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
-8. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter. Incluye además:
+8. **Voz e imagen**: tono de voz y fotografía en formato «Así sí / Así no», e iconografía con un set de 12 íconos de trazo. Cada ícono se copia en SVG con un toque y se puede ver sobre fondo claro, oscuro o naranja.
+9. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter. Incluye además:
    - **Generador de piezas**: cuatro formatos (publicación 1080 × 1080, historia 1080 × 1920, portada de LinkedIn 1584 × 396 y fondo para videollamadas 1920 × 1080), tres estructuras de texto (**Clásica**, **Centrada** y **Panel**) y tres colores (negro, naranja o claro). El fondo puede ser una imagen o un video propio, una maqueta del manual o un archivo de la carpeta de Google Drive; se encuadra arrastrándolo, con zoom y un velo que asegura la lectura. El logo y la trama se pueden mostrar u ocultar. Las imágenes se descargan en PNG y los videos se exportan como piezas animadas.
    - **Firma de correo**: se completan nombre, cargo, teléfono y correo, y se copia lista para pegar en Gmail u Outlook.
    - **Hoja membretada** en Word (para escribir) y en PDF (para imprimir).
    - **Manual en PDF** para enviar a imprentas o proveedores.
+   - **Checklist para proveedores** completo, en un archivo de texto para adjuntar a un pedido.
+
+## Herramientas de lectura
+
+- **Buscador**: botón de la lupa en la cabecera, `Ctrl + K` (`⌘ K` en Mac) o la tecla `/`. Encuentra secciones, bloques, colores (copia el HEX), logos (descarga el archivo), aplicaciones y herramientas del kit. Se recorre con las flechas y se abre con Enter.
+- **Modo oscuro**: sigue la configuración del dispositivo. El botón junto al buscador alterna entre automático, oscuro y claro, y el navegador lo recuerda. Los escenarios que muestran el logo o los colores sobre un fondo concreto conservan ese fondo. Al imprimir, el manual siempre sale claro.
+- **Enlace a cada bloque**: el ícono de cadena junto a cada título copia la dirección directa a ese bloque (por ejemplo, `…/#bloque-proteccion`), ideal para mandarle a un proveedor la regla exacta.
+- **Checklist para proveedores**: al final de las secciones Logo, Colores, Tipografía, Recursos, Aplicaciones y Voz hay una lista de puntos a verificar antes de producir. Se puede tildar en pantalla y copiar como texto. Se edita desde el editor, en la pestaña **Secciones** (una línea por punto; si queda vacía, el checklist no se muestra).
+
+### Formatos de bloque nuevos en el editor
+
+- **Así sí / Así no**: cada línea de la lista empieza con «Sí:» o «No:» para ubicarla en su columna. Si el bloque tiene imagen, se muestra junto al texto.
+- **Set de íconos**: una línea por ícono. Disponibles: Casco, Guantes, Calzado, Chaleco, Protección ocular, Protección auditiva, Protección, Envío, Stock, Asesoramiento, Teléfono y Ubicación.
 
 
 ## Videos en el generador
