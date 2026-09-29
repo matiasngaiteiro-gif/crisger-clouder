@@ -10,6 +10,7 @@ style.css       Diseño, tipografías locales y responsive
 app.js          Render desde data.json, interacciones y editor
 data.json       Todo el contenido editable del manual
 fonts/          Bai Jamjuree (Regular, SemiBold, Bold) e Inter
+vendor/         qrcode.js (Kazuhiko Arase, licencia MIT) para generar los códigos QR
 media/          Logos en SVG (5 versiones × 3 fondos), PNG originales, maquetas, imagen para compartir y referencias
   descargas/    PNG en alta resolución, ZIP de logos, hoja membretada (Word y PDF) y manual en PDF
 README.md
@@ -26,13 +27,19 @@ README.md
 7. **Aplicaciones**: una introducción sobre cómo se aplica la identidad en pantalla y en soportes físicos, y la galería de diez maquetas conceptuales, con filtro por categoría y visor ampliado (anterior/siguiente, contador, Escape, flechas del teclado y deslizamiento táctil).
 8. **Voz e imagen**: tono de voz y fotografía en formato «Así sí / Así no», e iconografía con un set de 12 íconos de trazo. Cada ícono se copia en SVG con un toque y se puede ver sobre fondo claro, oscuro o naranja.
 9. **Kit de marca**: descargas de los 15 logos (SVG y PNG en alta resolución), un ZIP con el paquete completo, la paleta en CSS o en texto para imprenta y las tipografías Bai Jamjuree e Inter. Incluye además:
-   - **Generador de piezas**: cuatro formatos (publicación 1080 × 1080, historia 1080 × 1920, portada de LinkedIn 1584 × 396 y fondo para videollamadas 1920 × 1080), tres estructuras de texto (**Clásica**, **Centrada** y **Panel**) y tres colores (negro, naranja o claro). El fondo puede ser una imagen o un video propio, una maqueta del manual o un archivo de la carpeta de Google Drive; se encuadra arrastrándolo, con zoom y un velo que asegura la lectura. El logo y la trama se pueden mostrar u ocultar. Las imágenes se descargan en PNG y los videos se exportan como piezas animadas.
+   - **Generador de piezas**: seis formatos (publicación 1080 × 1080, historia 1080 × 1920, portada de LinkedIn 1584 × 396, enlace horizontal 1200 × 628 para Facebook y LinkedIn, fondo para videollamadas 1920 × 1080 y cartel A4 / A3 para imprimir), siete estructuras (**Clásica**, **Centrada**, **Panel**, **Franja**, **Destacado** para precios o cifras, **Ícono** con el set de íconos de la marca y **Marco**) y tres colores (negro, naranja o claro).
+     - **Propósitos**: botones que cargan textos y estructura para un producto nuevo, una promoción, horarios y feriados, un consejo de seguridad, una búsqueda laboral o un cartel para imprimir. Los textos son un punto de partida para editar.
+     - **Sello opcional** (por ejemplo «Nuevo» o «-15%») en un círculo en la esquina.
+     - **Contacto y código QR**: franja opcional con teléfono, web y dirección, y un QR que abre WhatsApp, el sitio o cualquier enlace. Los datos quedan guardados en el navegador. En las historias, la franja deja libre la zona inferior que tapa Instagram. Conviene escanear el QR con el celular antes de imprimir.
+     - **Carteles**: el formato A4 / A3 se descarga en PDF A4 o A3 (misma proporción, sin deformar) listo para imprimir. Son carteles informativos de marca: no reemplazan la señalización de seguridad normalizada (IRAM), que tiene colores y pictogramas propios. El fondo puede ser una imagen o un video propio, una maqueta del manual o un archivo de la carpeta de Google Drive; se encuadra arrastrándolo, con zoom y un velo que asegura la lectura. El logo y la trama se pueden mostrar u ocultar. Las imágenes se descargan en PNG y los videos se exportan como piezas animadas.
    - **Firma de correo**: se completan nombre, cargo, teléfono y correo, y se copia lista para pegar en Gmail u Outlook.
    - **Hoja membretada** en Word (para escribir) y en PDF (para imprimir).
    - **Manual en PDF** para enviar a imprentas o proveedores.
    - **Checklist para proveedores** completo, en un archivo de texto para adjuntar a un pedido.
 
 ## Herramientas de lectura
+
+- **Crear pieza**: el botón naranja de la cabecera (y «Crear una pieza» en la portada) lleva directo al generador de piezas.
 
 - **Buscador**: botón de la lupa en la cabecera, `Ctrl + K` (`⌘ K` en Mac) o la tecla `/`. Encuentra secciones, bloques, colores (copia el HEX), logos (descarga el archivo), aplicaciones y herramientas del kit. Se recorre con las flechas y se abre con Enter.
 - **Modo oscuro**: sigue la configuración del dispositivo. El botón junto al buscador alterna entre automático, oscuro y claro, y el navegador lo recuerda. Los escenarios que muestran el logo o los colores sobre un fondo concreto conservan ese fondo. Al imprimir, el manual siempre sale claro.

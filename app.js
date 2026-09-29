@@ -280,7 +280,10 @@ function renderHero() {
     ]),
     h('div', { class: 'hero-bottom' }, [
       h('span', { class: 'hero-location' }, [h('b', { text: data.descriptor }), h('span', { text: data.location })]),
-      h('a', { class: 'hero-cta', href: `#${firstSection}` }, [h('span', { text: data.heroCta }), h('b', { class: 'cta-icon' }, icon(ICONS.down))])
+      h('div', { class: 'hero-actions' }, [
+        h('a', { class: 'hero-cta', href: `#${firstSection}` }, [h('span', { text: data.heroCta }), h('b', { class: 'cta-icon' }, icon(ICONS.down))]),
+        h('a', { class: 'hero-cta is-secondary', href: '#generador' }, [h('span', { text: 'Crear una pieza' }), h('b', { class: 'cta-icon' }, icon('M12 5v14M5 12h14'))])
+      ])
     ])
   ]);
 }
@@ -374,7 +377,9 @@ const ICON_SET = {
   'Stock': 'M3.5 7.5L12 3.2l8.5 4.3v9L12 20.8l-8.5-4.3zM3.5 7.5L12 11.8l8.5-4.3M12 11.8v9',
   'Asesoramiento': 'M4 4.5h16v11H9.5L4 19.5zM8 8.5h8M8 11.5h5',
   'Teléfono': 'M5.5 4h3.3l1.7 4.4-2.2 1.4a11 11 0 0 0 5.9 5.9l1.4-2.2 4.4 1.7v3.3a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 4 5.5 1.5 1.5 0 0 1 5.5 4z',
-  'Ubicación': 'M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11zM12 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 1 0 0-5'
+  'Ubicación': 'M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11zM12 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 1 0 0-5',
+  'Reloj': 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17zM12 7.5V12l3 2',
+  'Atención': 'M12 3.5L2.8 19.5h18.4zM12 9.5v4.5M12 16.8v.2'
 };
 const iconSVG = (path, color = 'currentColor') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`;
 function renderIcons(host, m) {
@@ -863,24 +868,41 @@ function renderKit() {
 
 /* ---------- Plantillas de uso rápido ---------- */
 const TPL_FORMATS = {
-  post: { label: 'Publicación', size: '1080 × 1080', w: 1080, h: 1080 },
-  story: { label: 'Historia', size: '1080 × 1920', w: 1080, h: 1920 },
-  banner: { label: 'Portada LinkedIn', size: '1584 × 396', w: 1584, h: 396 },
-  video: { label: 'Videollamada', size: '1920 × 1080', w: 1920, h: 1080 }
+  post: { label: 'Publicación', size: '1080 × 1080', w: 1080, h: 1080, shape: 'square' },
+  story: { label: 'Historia', size: '1080 × 1920', w: 1080, h: 1920, shape: 'port' },
+  banner: { label: 'Portada LinkedIn', size: '1584 × 396', w: 1584, h: 396, shape: 'strip' },
+  link: { label: 'Enlace horizontal', size: '1200 × 628', w: 1200, h: 628, shape: 'land' },
+  video: { label: 'Videollamada', size: '1920 × 1080', w: 1920, h: 1080, shape: 'land' },
+  a4: { label: 'Cartel A4 / A3', size: '2480 × 3508', w: 2480, h: 3508, shape: 'port', print: true }
 };
 const TPL_STYLES = {
-  negro: { label: 'Negro', bg: '#000000', glow: true, title: '#FFFFFF', text: '#CCCCCC', tag: '#FE5000', bar: '#FE5000', logo: 'oscuro', iso: 'naranja', isoAlpha: 0.08, cta: '#FE5000', ctaInk: '#000000', shade: '0,0,0' },
-  naranja: { label: 'Naranja', bg: '#FE5000', glow: false, title: '#FFFFFF', text: '#000000', tag: '#000000', bar: '#000000', logo: 'naranja', iso: 'naranja', isoAlpha: 0.16, cta: '#000000', ctaInk: '#FFFFFF', shade: '254,80,0' },
-  claro: { label: 'Claro', bg: '#F2F2F2', glow: false, title: '#000000', text: '#44464B', tag: '#000000', bar: '#FE5000', logo: 'claro', iso: 'claro', isoAlpha: 0.09, cta: '#FE5000', ctaInk: '#000000', shade: '242,242,242' }
+  negro: { label: 'Negro', bg: '#000000', glow: true, title: '#FFFFFF', text: '#CCCCCC', tag: '#FE5000', bar: '#FE5000', logo: 'oscuro', iso: 'naranja', isoAlpha: 0.08, cta: '#FE5000', ctaInk: '#000000', shade: '0,0,0',
+    hi: '#FE5000', frame: '#FE5000', foot: '#141416', footLine: '#FE5000', circle: '#FE5000', circleInk: '#000000', badge: '#FE5000', badgeInk: '#000000', block: '#FE5000' },
+  naranja: { label: 'Naranja', bg: '#FE5000', glow: false, title: '#FFFFFF', text: '#000000', tag: '#000000', bar: '#000000', logo: 'naranja', iso: 'naranja', isoAlpha: 0.16, cta: '#000000', ctaInk: '#FFFFFF', shade: '254,80,0',
+    hi: '#000000', frame: '#000000', foot: '#000000', footLine: '', circle: '#000000', circleInk: '#FE5000', badge: '#000000', badgeInk: '#FFFFFF', block: '#000000' },
+  claro: { label: 'Claro', bg: '#F2F2F2', glow: false, title: '#000000', text: '#44464B', tag: '#000000', bar: '#FE5000', logo: 'claro', iso: 'claro', isoAlpha: 0.09, cta: '#FE5000', ctaInk: '#000000', shade: '242,242,242',
+    hi: '#FE5000', frame: '#FE5000', foot: '#000000', footLine: '#FE5000', circle: '#FE5000', circleInk: '#000000', badge: '#000000', badgeInk: '#FFFFFF', block: '#000000' }
 };
-const TPL_LAYOUTS = [['clasica', 'Clásica'], ['centrada', 'Centrada'], ['panel', 'Panel']];
+const TPL_LAYOUTS = [['clasica', 'Clásica'], ['centrada', 'Centrada'], ['panel', 'Panel'], ['franja', 'Franja'], ['destacado', 'Destacado'], ['icono', 'Ícono'], ['marco', 'Marco']];
+// Estructuras con un área de imagen separada del área de texto
+const TPL_SPLIT = new Set(['panel', 'franja']);
+// Propósitos: cargan textos y una estructura pensada para cada tipo de pieza
+const TPL_PRESETS = [
+  ['producto', 'Producto nuevo', { layout: 'franja', style: 'negro', tag: 'Nuevo ingreso', title: 'Guantes de alta resistencia', text: 'Protección y agarre para tareas exigentes. Consultá talles y stock.', cta: 'Consultanos', badge: 'Nuevo', highlight: '' }],
+  ['promo', 'Promoción', { layout: 'destacado', style: 'negro', tag: 'Promoción', highlight: '$ 00.000', title: 'Botines de seguridad con puntera', text: 'Válido hasta agotar stock.', cta: 'Pedilo por WhatsApp', badge: '-15%' }],
+  ['horario', 'Horarios y feriados', { layout: 'icono', style: 'claro', icon: 'Reloj', tag: 'Horarios', title: 'El lunes feriado permanecemos cerrados', text: 'El martes te esperamos en el horario habitual.', cta: '', badge: '', highlight: '' }],
+  ['consejo', 'Consejo de seguridad', { layout: 'icono', style: 'negro', icon: 'Casco', tag: 'Consejo de seguridad', title: 'Un casco protege si está bien ajustado', text: 'Regulá el arnés antes de cada jornada y reemplazalo si tiene golpes o fisuras.', cta: '', badge: '', highlight: '' }],
+  ['busqueda', 'Búsqueda laboral', { layout: 'marco', style: 'negro', tag: 'Búsqueda laboral', title: 'Sumate al equipo de Crisger', text: 'Buscamos vendedor/a con experiencia en elementos de protección personal.', cta: 'Enviá tu CV', badge: '', highlight: '' }],
+  ['cartel', 'Cartel para imprimir', { format: 'a4', layout: 'icono', style: 'claro', icon: 'Casco', tag: 'Recordatorio', title: 'En esta zona usá casco', text: 'Tu seguridad empieza por el equipo correcto.', cta: '', badge: '', highlight: '' }]
+];
 const tpl = {
-  format: 'post', style: 'negro', layout: 'clasica',
+  format: 'post', style: 'negro', layout: 'clasica', preset: '',
   tag: 'Seguridad Industrial', title: 'La seguridad se hace visible.',
   text: 'Elementos de protección personal, indumentaria laboral y asesoramiento técnico en San Nicolás de los Arroyos.',
-  cta: '', pattern: true,
+  cta: '', highlight: '$ 00.000', badge: '', icon: 'Casco', pattern: true,
   image: null, video: null, imageName: '', zoom: 1, ox: 0, oy: 0, shade: 60,
-  showLogo: true, clipStart: 0, clipLength: 8
+  showLogo: true, clipStart: 0, clipLength: 8,
+  contact: false, phone: '', web: '', address: '', qr: false, qrLink: ''
 };
 const imgCache = new Map();
 function loadImg(src) {
@@ -903,18 +925,20 @@ function fitTitle(ctx, text, maxW, size, maxLines, minSize) {
   do {
     ctx.font = `700 ${s}px "Bai Jamjuree"`; setLS(ctx, -0.03 * s);
     lines = wrapLines(ctx, text, maxW);
-    s -= 4;
+    s -= Math.max(1, size * 0.03);
   } while ((lines.length > maxLines || lines.some(l => ctx.measureText(l).width > maxW)) && s > minSize);
-  return { lines, size: s + 4 };
+  return { lines, size: s + Math.max(1, size * 0.03) };
 }
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
   ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
 }
-/* Bloque de texto: etiqueta, titular, texto y botón, anclado arriba, abajo o al centro. */
+/* Bloque de texto: etiqueta, destacado, titular, texto y botón, anclado arriba, abajo o al centro.
+   Con measure: true solo devuelve la altura, sin dibujar. */
 function textBlock(ctx, S, o) {
   const parts = [];
   if (tpl.tag) parts.push({ type: 'tag', h: o.tagSize, gap: o.tagSize * 0.95 });
+  if (tpl.highlight && o.hiSize) { const t = fitTitle(ctx, tpl.highlight, o.w, o.hiSize, 1, o.hiSize * 0.4); parts.push({ type: 'hi', h: t.size * 0.86, t, gap: o.hiSize * 0.2 }); }
   if (tpl.title) { const t = fitTitle(ctx, tpl.title, o.w, o.titleSize, o.maxLines, o.titleSize * 0.5); parts.push({ type: 'title', h: t.lines.length * t.size, t, gap: o.titleSize * 0.34 }); }
   if (tpl.text && o.textLines) {
     ctx.font = `400 ${o.textSize}px Inter`; setLS(ctx, 0);
@@ -923,6 +947,7 @@ function textBlock(ctx, S, o) {
   }
   if (tpl.cta && o.ctaSize) parts.push({ type: 'cta', h: o.ctaSize * 2.3, gap: 0 });
   const total = parts.reduce((a, p, i) => a + p.h + (i < parts.length - 1 ? p.gap : 0), 0);
+  if (o.measure) return total;
   let y = o.bottom !== undefined ? o.bottom - total : o.center !== undefined ? o.center - total / 2 : o.top;
   const ax = o.align === 'center' ? o.x + o.w / 2 : o.align === 'right' ? o.x + o.w : o.x;
   ctx.textBaseline = 'alphabetic';
@@ -933,6 +958,10 @@ function textBlock(ctx, S, o) {
       const sx = o.align === 'center' ? ax - full / 2 : o.align === 'right' ? ax - full : ax;
       ctx.fillStyle = S.bar; ctx.fillRect(sx, y + o.tagSize * 0.44, barW, Math.max(3, o.tagSize * 0.14));
       ctx.fillStyle = S.tag; ctx.textAlign = 'left'; ctx.fillText(tpl.tag, sx + barW + gap, y + o.tagSize * 0.8);
+    } else if (p.type === 'hi') {
+      ctx.font = `700 ${p.t.size}px "Bai Jamjuree"`; setLS(ctx, -0.04 * p.t.size);
+      ctx.fillStyle = S.hi; ctx.textAlign = o.align;
+      ctx.fillText(p.t.lines[0] || '', ax, y + p.t.size * 0.76);
     } else if (p.type === 'title') {
       ctx.font = `700 ${p.t.size}px "Bai Jamjuree"`; setLS(ctx, -0.03 * p.t.size);
       ctx.fillStyle = S.title; ctx.textAlign = o.align;
@@ -951,6 +980,7 @@ function textBlock(ctx, S, o) {
     y += p.h + p.gap;
   }
   ctx.textAlign = 'left'; setLS(ctx, 0);
+  return total;
 }
 function drawCover(ctx, img, x, y, w, h) {
   // Sirve tanto para imágenes como para el cuadro actual de un video
@@ -962,10 +992,10 @@ function drawCover(ctx, img, x, y, w, h) {
   dx = Math.min(x, Math.max(x + w - dw, dx)); dy = Math.min(y, Math.max(y + h - dh, dy));
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip(); ctx.drawImage(img, dx, dy, dw, dh); ctx.restore();
 }
-function drawPattern(ctx, iso, S, W, H, region) {
+function drawPattern(ctx, iso, S, region, strip) {
   const { x, y, w, h } = region;
-  const t = Math.min(w, h) * (tpl.format === 'banner' ? 0.3 : 0.1), th = t * iso.height / iso.width, gap = t * 0.1;
-  const maxD = Math.hypot(w, h) * (tpl.format === 'banner' ? 0.45 : 0.62);
+  const t = Math.min(w, h) * (strip ? 0.3 : 0.1), th = t * iso.height / iso.width, gap = t * 0.1;
+  const maxD = Math.hypot(w, h) * (strip ? 0.45 : 0.62);
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
   for (let yy = y + h - th; yy > y - th; yy -= th + gap) for (let xx = x + w - t; xx > x - t; xx -= t + gap) {
     const a = S.isoAlpha * Math.max(0, 1 - Math.hypot(x + w - xx, y + h - yy) / maxD);
@@ -973,37 +1003,142 @@ function drawPattern(ctx, iso, S, W, H, region) {
   }
   ctx.restore(); ctx.globalAlpha = 1;
 }
-/* Área de la imagen y del panel según estructura y formato */
-function panelGeometry(W, H) {
-  if (tpl.layout !== 'panel') return null;
-  if (tpl.format === 'story') return { panel: { x: 0, y: H * 0.56, w: W, h: H * 0.44 }, image: { x: 0, y: 0, w: W, h: H * 0.56 } };
-  if (tpl.format === 'banner') return { panel: { x: W * 0.52, y: 0, w: W * 0.48, h: H }, image: { x: 0, y: 0, w: W * 0.52, h: H } };
-  const pw = tpl.format === 'post' ? W * 0.5 : W * 0.42;
-  return { panel: { x: 0, y: 0, w: pw, h: H }, image: { x: pw, y: 0, w: W - pw, h: H } };
+/* Área de la imagen y del área de texto en las estructuras Panel y Franja */
+function splitGeometry(W, H, shape) {
+  if (tpl.layout === 'panel') {
+    if (shape === 'port') return { panel: { x: 0, y: H * 0.56, w: W, h: H * 0.44 }, image: { x: 0, y: 0, w: W, h: H * 0.56 } };
+    if (shape === 'strip') return { panel: { x: W * 0.52, y: 0, w: W * 0.48, h: H }, image: { x: 0, y: 0, w: W * 0.52, h: H } };
+    const pw = shape === 'square' ? W * 0.5 : W * 0.42;
+    return { panel: { x: 0, y: 0, w: pw, h: H }, image: { x: pw, y: 0, w: W - pw, h: H } };
+  }
+  if (tpl.layout === 'franja') {
+    if (shape === 'strip') return { panel: { x: W * 0.4, y: 0, w: W * 0.6, h: H }, image: { x: 0, y: 0, w: W * 0.4, h: H } };
+    const r = shape === 'port' ? 0.6 : shape === 'land' ? 0.52 : 0.56;
+    return { panel: { x: 0, y: H * r, w: W, h: H * (1 - r) }, image: { x: 0, y: 0, w: W, h: H * r } };
+  }
+  return null;
+}
+/* Sello circular (por ejemplo «Nuevo» o «-15%») */
+function drawBadge(ctx, S, cx, cy, r) {
+  if (!tpl.badge) return;
+  ctx.save(); ctx.translate(cx, cy); ctx.rotate(-0.14);
+  ctx.fillStyle = S.badge; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+  const t = fitTitle(ctx, tpl.badge, r * 1.45, r * 0.62, 2, r * 0.2);
+  ctx.font = `700 ${t.size}px "Bai Jamjuree"`; setLS(ctx, -0.02 * t.size);
+  ctx.fillStyle = S.badgeInk; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const total = t.lines.length * t.size;
+  t.lines.forEach((l, i) => ctx.fillText(l, 0, -total / 2 + t.size * 0.76 + i * t.size));
+  ctx.restore(); ctx.textAlign = 'left'; setLS(ctx, 0);
+}
+/* Ícono del set de marca dentro de un círculo */
+function drawIconCircle(ctx, S, cx, cy, r) {
+  ctx.fillStyle = S.circle; ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+  const s = r * 1.12 / 24;
+  ctx.save(); ctx.translate(cx - 12 * s, cy - 12 * s); ctx.scale(s, s);
+  ctx.strokeStyle = S.circleInk; ctx.lineWidth = 1.9; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  ctx.stroke(new Path2D(ICON_SET[tpl.icon] || ICON_SET['Protección']));
+  ctx.restore();
+}
+/* Contacto y código QR */
+const WEB_ICON = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3.5 12h17M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9S9.6 5.6 12 3z';
+const contactItems = () => (tpl.contact ? [[ICON_SET['Teléfono'], tpl.phone], [WEB_ICON, tpl.web], [ICON_SET['Ubicación'], tpl.address]] : [])
+  .map(([p, t]) => [p, String(t || '').trim()]).filter(([, t]) => t);
+const qrTarget = () => (tpl.qr ? String(tpl.qrLink || '').trim() : '');
+const waLink = phone => { const d = String(phone || '').replace(/\D/g, ''); return d.length >= 8 ? `https://wa.me/${d}` : ''; };
+let qrLib = null;
+const qrCache = new Map();
+function loadQRLib() {
+  if (window.qrcode) return Promise.resolve(window.qrcode);
+  return (qrLib ||= new Promise((resolve, reject) => {
+    const s = h('script', { src: 'vendor/qrcode.js' });
+    s.onload = () => resolve(window.qrcode); s.onerror = () => { qrLib = null; reject(new Error('qr')); };
+    document.head.append(s);
+  }));
+}
+async function qrMatrix(text) {
+  if (!qrCache.has(text)) {
+    const lib = await loadQRLib();
+    const q = lib(0, 'M'); q.addData(text); q.make();
+    const n = q.getModuleCount();
+    qrCache.set(text, Array.from({ length: n }, (_, r) => Array.from({ length: n }, (_, c) => q.isDark(r, c))));
+  }
+  return qrCache.get(text);
+}
+function drawQR(ctx, matrix, x, y, size) {
+  const n = matrix.length, quiet = 2.5, cell = size / (n + quiet * 2);
+  ctx.fillStyle = '#FFFFFF'; roundRect(ctx, x, y, size, size, cell * 1.5); ctx.fill();
+  ctx.fillStyle = '#000000';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (matrix[r][c]) ctx.fillRect(Math.floor(x + (quiet + c) * cell), Math.floor(y + (quiet + r) * cell), Math.ceil(cell), Math.ceil(cell));
+}
+async function drawFooter(ctx, S, W, y0, band, m) {
+  ctx.fillStyle = S.foot; ctx.fillRect(0, y0, W, band.total);
+  if (S.footLine) { ctx.fillStyle = S.footLine; ctx.fillRect(0, y0, W, Math.max(3, band.inner * 0.035)); }
+  const pad = band.inner * 0.16, qrText = qrTarget();
+  let qrSize = 0;
+  if (qrText) {
+    try { qrSize = band.inner - pad * 2; drawQR(ctx, await qrMatrix(qrText), W - m - qrSize, y0 + pad, qrSize); }
+    catch { qrSize = 0; }
+  }
+  const items = contactItems();
+  if (!items.length) return;
+  const fs = Math.min(band.inner * 0.2, W * 0.028), isz = fs * 1.1, gapX = fs * 1.6, maxX = W - m - (qrSize ? qrSize + fs * 1.5 : 0);
+  ctx.font = `600 ${fs}px "Bai Jamjuree"`; setLS(ctx, 0); ctx.textBaseline = 'alphabetic';
+  // Reparte los datos en una o dos filas según el ancho disponible
+  const rows = [[]]; let x = m;
+  for (const [path, text] of items) {
+    let t = text, w = isz + fs * 0.45 + ctx.measureText(t).width;
+    if (x + w > maxX && rows.at(-1).length) { rows.push([]); x = m; }
+    while (m + w > maxX && t.length > 4) { t = `${t.slice(0, -2)}…`; w = isz + fs * 0.45 + ctx.measureText(t).width; }
+    rows.at(-1).push([path, t, x]); x += w + gapX;
+  }
+  const lineH = fs * 1.7, used = rows.slice(0, Math.max(1, Math.floor((band.inner - pad) / lineH)));
+  let y = y0 + band.inner / 2 - (used.length * lineH) / 2 + lineH / 2;
+  for (const row of used) {
+    for (const [path, t, px] of row) {
+      const s = isz / 24;
+      ctx.save(); ctx.translate(px, y - isz / 2); ctx.scale(s, s);
+      ctx.strokeStyle = S.footLine || '#FE5000'; ctx.lineWidth = 2.2; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      ctx.stroke(new Path2D(path)); ctx.restore();
+      ctx.fillStyle = '#FFFFFF'; ctx.fillText(t, px + isz + fs * 0.45, y + fs * 0.36);
+    }
+    y += lineH;
+  }
 }
 async function drawTemplate(canvas) {
   const F = TPL_FORMATS[tpl.format];
+  const shape = F.shape, story = tpl.format === 'story', strip = shape === 'strip';
   let S = TPL_STYLES[tpl.style];
-  const W = F.w, H = F.h;
-  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; }
+  const W = F.w, FH = F.h;
+  if (canvas.width !== W || canvas.height !== FH) { canvas.width = W; canvas.height = FH; }
   const ctx = canvas.getContext('2d');
   if (!drawTemplate.fonts) drawTemplate.fonts = Promise.all([document.fonts.load('700 40px "Bai Jamjuree"'), document.fonts.load('600 40px "Bai Jamjuree"'), document.fonts.load('400 20px Inter')]).catch(() => {});
   await drawTemplate.fonts;
-  ctx.clearRect(0, 0, W, H);
+  ctx.clearRect(0, 0, W, FH);
+  const L = tpl.layout;
+  const img = tpl.video || tpl.image;
   // Con imagen de fondo a pantalla completa, los textos se ajustan para leerse sobre el velo
-  if ((tpl.image || tpl.video) && tpl.layout !== 'panel') {
+  if (img && !TPL_SPLIT.has(L)) {
     if (tpl.style === 'negro') S = { ...S, text: '#E6E6E6', tag: '#FFFFFF' };
-    if (tpl.style === 'naranja') S = { ...S, title: '#FFFFFF', text: '#FFFFFF', tag: '#FFFFFF', bar: '#FFFFFF', cta: '#FFFFFF', ctaInk: '#000000' };
+    if (tpl.style === 'naranja') S = { ...S, title: '#FFFFFF', text: '#FFFFFF', tag: '#FFFFFF', bar: '#FFFFFF', cta: '#FFFFFF', ctaInk: '#000000', hi: '#FFFFFF' };
     if (tpl.style === 'claro') S = { ...S, text: '#000000' };
   }
   const [logo, iso] = await Promise.all([loadImg(logoAsset('principal', S.logo)), loadImg(logoAsset('isotipo', S.iso))]);
-  const img = tpl.video || tpl.image;
-  const geo = panelGeometry(W, H);
+  // Franja de contacto y QR: ocupa la parte inferior (en historias deja libre la zona de la interfaz de Instagram)
+  const u0 = Math.min(W, FH) / 1080;
+  const hasFooter = !strip && (contactItems().length || qrTarget());
+  // Mínimo de 150 px para que el QR tenga al menos 3 px por módulo y se pueda escanear
+  const inner = hasFooter ? Math.max(150, (tpl.format === 'a4' ? 250 : story ? 190 : shape === 'land' ? 130 : 160) * u0) : 0;
+  const band = { inner, total: inner + (story && hasFooter ? 200 * u0 : 0) };
+  const H = FH - band.total;
   const u = Math.min(W, H) / 1080;
+  const m = (shape === 'square' ? 88 : shape === 'port' ? 96 : 72) * u;
+  const topSafe = story ? 150 * u : m, botSafe = story && !hasFooter ? 300 * u : m;
+  const geo = splitGeometry(W, H, shape);
+  const frameT = L === 'marco' ? (strip ? 14 : 26 * u) : 0;
   // 1. Fondo de color
-  ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H);
-  // 2. Imagen (toda la pieza, o solo el área de imagen en la estructura Panel)
-  const imgArea = geo ? geo.image : { x: 0, y: 0, w: W, h: H };
+  ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, FH);
+  // 2. Imagen (toda la pieza, dentro del marco o solo en el área de imagen)
+  const imgArea = geo ? geo.image : { x: frameT, y: frameT, w: W - frameT * 2, h: H - frameT * 2 };
   if (img) {
     drawCover(ctx, img, imgArea.x, imgArea.y, imgArea.w, imgArea.h);
     if (!geo) {
@@ -1013,13 +1148,13 @@ async function drawTemplate(canvas) {
         ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.fillStyle = `rgba(254,80,0,${0.35 + a * 0.55})`; ctx.fillRect(0, 0, W, H); ctx.restore();
       }
       const tint = tpl.style === 'naranja' ? '0,0,0' : S.shade;
-      if (tpl.layout === 'centrada') {
+      if (L === 'centrada' || L === 'icono') {
         ctx.fillStyle = `rgba(${tint},${a * 0.7})`; ctx.fillRect(0, 0, W, H);
         const r = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.55);
         r.addColorStop(0, `rgba(${tint},${Math.min(0.9, a * 1.1)})`); r.addColorStop(1, `rgba(${tint},0)`);
         ctx.fillStyle = r; ctx.fillRect(0, 0, W, H);
       } else {
-        const g = tpl.format === 'banner' ? ctx.createLinearGradient(W, 0, W * 0.3, 0) : ctx.createLinearGradient(0, H, 0, H * 0.25);
+        const g = strip ? ctx.createLinearGradient(W, 0, W * 0.3, 0) : ctx.createLinearGradient(0, H, 0, H * 0.25);
         g.addColorStop(0, `rgba(${tint},${Math.min(0.95, a * 1.25)})`); g.addColorStop(1, `rgba(${tint},${a * 0.15})`);
         ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
       }
@@ -1029,46 +1164,160 @@ async function drawTemplate(canvas) {
     g.addColorStop(0, 'rgba(254,80,0,0.62)'); g.addColorStop(0.38, 'rgba(254,80,0,0.2)'); g.addColorStop(0.7, 'rgba(254,80,0,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   }
-  // 3. Panel sólido
+  // 3. Área de texto sólida (Panel y Franja)
   if (geo) {
     const p = geo.panel;
     ctx.fillStyle = S.bg; ctx.fillRect(p.x, p.y, p.w, p.h);
-    if (!img) { // sin imagen, el área de imagen muestra la trama sobre el color opuesto
-      ctx.fillStyle = tpl.style === 'negro' ? '#FE5000' : '#000000'; ctx.fillRect(imgArea.x, imgArea.y, imgArea.w, imgArea.h);
+    if (!img) { // sin imagen, el área de imagen se pinta con el color de contraste
+      ctx.fillStyle = S.block; ctx.fillRect(imgArea.x, imgArea.y, imgArea.w, imgArea.h);
+    }
+    if (L === 'franja') {
+      ctx.fillStyle = tpl.style === 'naranja' ? '#FFFFFF' : '#FE5000';
+      const t = Math.max(4, (strip ? 8 : 10 * u));
+      if (strip) ctx.fillRect(p.x, 0, t, H); else ctx.fillRect(0, p.y, W, t);
     }
   }
-  // 4. Trama del isotipo
-  // Sobre una foto la trama recarga la pieza: solo se aplica en el panel o en fondos lisos
-  if (tpl.pattern && (geo || !img)) drawPattern(ctx, iso, S, W, H, geo ? geo.panel : { x: 0, y: 0, w: W, h: H });
-  // 5. Logo y textos
+  // 4. Trama del isotipo: sobre una foto recarga la pieza, así que solo va en el área de texto o en fondos lisos
+  if (tpl.pattern && (geo || !img)) drawPattern(ctx, iso, S, geo ? geo.panel : { x: 0, y: 0, w: W, h: H }, strip);
+  // 5. Marco
+  if (frameT) {
+    ctx.fillStyle = S.frame;
+    ctx.fillRect(0, 0, W, frameT); ctx.fillRect(0, H - frameT, W, frameT); ctx.fillRect(0, 0, frameT, H); ctx.fillRect(W - frameT, 0, frameT, H);
+  }
+  // 6. Logo, sello y textos
   const logoW = hgt => hgt * logo.width / logo.height;
   const drawLogo = (x, y, hgt) => { if (tpl.showLogo) ctx.drawImage(logo, x, y, logoW(hgt), hgt); };
-  const L = tpl.layout, f = tpl.format;
+  const drawLogoPill = (x, y, hgt) => {
+    if (!tpl.showLogo) return;
+    const px = hgt * 0.5, py = hgt * 0.42, w = logoW(hgt) + px * 2, hh = hgt + py * 2;
+    ctx.fillStyle = S.bg; roundRect(ctx, x, y, w, hh, hh * 0.24); ctx.fill();
+    ctx.drawImage(logo, x + px, y + py, logoW(hgt), hgt);
+  };
+  const cornerBadge = () => {
+    if (strip || L === 'destacado') return;
+    const r = (shape === 'port' ? 120 : 100) * u;
+    // Sobre el bloque de color de Panel y Franja, el sello toma el color del fondo para no confundirse
+    const onBlock = geo && !img;
+    drawBadge(ctx, onBlock ? { ...S, badge: S.bg, badgeInk: S.title } : S, W - m - r * 0.9, (story ? topSafe : m) + r * 0.9, r);
+  };
+  const sz = (sq, port, land) => (shape === 'square' ? sq : shape === 'port' ? port : land) * u;
   if (L === 'panel') {
-    const p = geo.panel, m = (f === 'banner' ? 40 : 72 * u), lh = f === 'banner' ? 30 : 44 * u;
-    if (f === 'banner') {
-      drawLogo(p.x + p.w - m - logoW(lh), p.y + p.h - m - lh, lh);
-      textBlock(ctx, S, { x: p.x + m, w: p.w - 2 * m, align: 'right', top: m, titleSize: 44, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    const p = geo.panel, pm = strip ? 40 : 72 * u, lh = strip ? 30 : 44 * u;
+    if (strip) {
+      drawLogo(p.x + p.w - pm - logoW(lh), p.y + p.h - pm - lh, lh);
+      textBlock(ctx, S, { x: p.x + pm, w: p.w - 2 * pm, align: 'right', top: pm, titleSize: 44, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
     } else {
-      drawLogo(p.x + m, p.y + m, lh);
-      textBlock(ctx, S, { x: p.x + m, w: p.w - 2 * m, align: 'left', bottom: p.y + p.h - m, titleSize: (f === 'story' ? 96 : f === 'video' ? 64 : 72) * (f === 'video' ? 1 : u), maxLines: 4, tagSize: (f === 'video' ? 22 : 26 * u), textSize: f === 'video' ? 24 : 28 * u, textLines: f === 'story' ? 3 : 4, ctaSize: f === 'video' ? 22 : 26 * u });
+      drawLogo(p.x + pm, p.y + pm, lh);
+      textBlock(ctx, S, { x: p.x + pm, w: p.w - 2 * pm, align: 'left', bottom: p.y + p.h - pm, titleSize: sz(72, 96, 64), maxLines: 4, tagSize: sz(26, 26, 22), textSize: sz(28, 28, 24), textLines: shape === 'port' ? 3 : 4, ctaSize: sz(26, 26, 22) });
+    }
+    cornerBadge();
+  } else if (L === 'franja') {
+    const p = geo.panel;
+    if (strip) {
+      drawLogoPill(18, 18, 26);
+      textBlock(ctx, S, { x: p.x + 48, w: p.w - 96, align: 'right', center: H / 2, titleSize: 52, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    } else {
+      drawLogoPill(m * 0.6, story ? topSafe : m * 0.6, sz(40, 46, 40));
+      const bottom = story && !hasFooter ? H - 220 * u : p.y + p.h;
+      textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', center: (p.y + bottom) / 2 + 4 * u, titleSize: sz(76, 96, 60), maxLines: shape === 'land' ? 2 : 3, tagSize: sz(28, 34, 22), textSize: sz(30, 36, 24), textLines: shape === 'port' ? 3 : 2, ctaSize: sz(28, 34, 22) });
+      cornerBadge();
     }
   } else if (L === 'centrada') {
-    const lh = f === 'banner' ? 30 : (f === 'video' ? 46 : 50 * u);
-    if (f === 'banner') {
+    if (strip) {
+      const lh = 30;
       drawLogo(W - 40 - logoW(lh), H - 40 - lh, lh);
       textBlock(ctx, S, { x: W * 0.2, w: W * 0.6, align: 'center', center: H / 2 - 10, titleSize: 56, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
     } else {
-      drawLogo(W / 2 - logoW(lh) / 2, (f === 'story' ? 150 : 80) * (f === 'video' ? 1 : u), lh);
-      const m = (f === 'video' ? 260 : 110 * u);
-      textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'center', center: H / 2 + (f === 'story' ? 40 : 30) * u, titleSize: (f === 'story' ? 120 : f === 'video' ? 84 : 100) * (f === 'video' ? 1 : u), maxLines: 4, tagSize: f === 'video' ? 26 : 30 * u, textSize: f === 'video' ? 28 : 32 * u, textLines: 3, ctaSize: f === 'video' ? 26 : 30 * u });
+      const lh = sz(50, 50, 46);
+      drawLogo(W / 2 - logoW(lh) / 2, story ? topSafe : 80 * u, lh);
+      const mm = sz(110, 110, 260);
+      textBlock(ctx, S, { x: mm, w: W - 2 * mm, align: 'center', center: H / 2 + sz(30, 40, 30), titleSize: sz(100, 120, 84), maxLines: 4, tagSize: sz(30, 30, 26), textSize: sz(32, 32, 28), textLines: 3, ctaSize: sz(30, 30, 26) });
+      cornerBadge();
+    }
+  } else if (L === 'destacado') {
+    if (strip) {
+      drawLogo(W - 56 - logoW(34), H - 56 - 34, 34);
+      textBlock(ctx, S, { x: W * 0.35, w: W * 0.65 - 56, align: 'right', bottom: H - 56 - 34 - 30, hiSize: 116, titleSize: 40, maxLines: 1, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    } else if (shape === 'land') {
+      drawLogo(m, m, 48 * u);
+      const r = 150 * u;
+      drawBadge(ctx, S, W - m - r, H / 2 + 20 * u, r);
+      textBlock(ctx, S, { x: m, w: W - 2 * m - (tpl.badge ? r * 2 + 40 * u : 0), align: 'left', bottom: H - m, hiSize: 190 * u, titleSize: 60 * u, maxLines: 2, tagSize: 20 * u, textSize: 24 * u, textLines: 2, ctaSize: 22 * u });
+    } else {
+      const port = shape === 'port', lh = sz(46, 54, 0), r = sz(110, 130, 0);
+      drawLogo(m, topSafe, lh);
+      drawBadge(ctx, S, W - m - r * 0.9, topSafe + r * 0.9, r);
+      textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - botSafe, hiSize: sz(210, 260, 0), titleSize: sz(72, 96, 0), maxLines: port ? 4 : 3, tagSize: sz(29, 35, 0), textSize: sz(30, 36, 0), textLines: port ? 3 : 2, ctaSize: sz(28, 34, 0) });
+    }
+  } else if (L === 'icono') {
+    if (strip) {
+      const r = 118, cx = W - 56 - r, cy = H / 2 + 14;
+      drawIconCircle(ctx, S, cx, cy, r);
+      drawLogo(W - 56 - logoW(28), 24, 28);
+      textBlock(ctx, S, { x: W * 0.3, w: cx - r - 56 - W * 0.3, align: 'right', center: H / 2, titleSize: 52, maxLines: 2, tagSize: 18, textSize: 0, textLines: 0, ctaSize: 0 });
+    } else if (shape === 'land') {
+      drawLogo(m, m, 48 * u);
+      const r = H * 0.3, cx = W * 0.27, cy = H / 2 + 24 * u;
+      drawIconCircle(ctx, S, cx, cy, r);
+      textBlock(ctx, S, { x: W * 0.47, w: W * 0.53 - m, align: 'left', center: H / 2 + 16 * u, titleSize: 72 * u, maxLines: 3, tagSize: 22 * u, textSize: 26 * u, textLines: 3, ctaSize: 24 * u });
+      cornerBadge();
+    } else {
+      const port = shape === 'port', poster = tpl.format === 'a4';
+      drawLogo(m, topSafe, sz(46, 54, 0));
+      const r = poster ? 250 * u : sz(150, 190, 0);
+      const cy = poster ? H * 0.3 : port ? H * 0.34 : H * 0.33;
+      drawIconCircle(ctx, S, W / 2, cy, r);
+      const mm = sz(100, 96, 0);
+      textBlock(ctx, S, { x: mm, w: W - 2 * mm, align: 'center', top: cy + r + sz(56, 72, 0), titleSize: poster ? 124 * u : sz(84, 104, 0), maxLines: port ? 4 : 3, tagSize: sz(28, 34, 0), textSize: sz(30, 36, 0), textLines: 3, ctaSize: sz(28, 34, 0) });
+      cornerBadge();
+    }
+  } else if (L === 'marco') {
+    const t = frameT;
+    if (strip) {
+      drawLogoPill(t + 14, t + 14, 24);
+      const bw = W * 0.5, pad = 28;
+      const opts = { x: W - t - bw + pad, w: bw - pad * 2, align: 'left', titleSize: 46, maxLines: 2, tagSize: 17, textSize: 0, textLines: 0, ctaSize: 0 };
+      const bh = textBlock(ctx, S, { ...opts, measure: true }) + pad * 2;
+      ctx.fillStyle = S.bg; ctx.fillRect(W - t - bw, H - t - bh, bw, bh);
+      textBlock(ctx, S, { ...opts, top: H - t - bh + pad });
+    } else {
+      drawLogoPill(t + 24 * u, story ? topSafe : t + 24 * u, sz(40, 46, 40));
+      const bw = W * (shape === 'square' ? 0.76 : shape === 'port' ? 0.86 : 0.52), pad = sz(52, 60, 44);
+      const opts = { x: t + pad, w: bw - pad * 2, align: 'left', titleSize: sz(76, 96, 58), maxLines: shape === 'land' ? 2 : 3, tagSize: sz(28, 34, 20), textSize: sz(30, 34, 22), textLines: shape === 'port' ? 3 : 2, ctaSize: sz(28, 32, 22) };
+      const bh = textBlock(ctx, S, { ...opts, measure: true }) + pad * 2;
+      const by = H - t - bh - (story && !hasFooter ? 200 * u : 0);
+      ctx.fillStyle = S.bg; ctx.fillRect(t, by, bw, bh);
+      textBlock(ctx, S, { ...opts, top: by + pad });
+      cornerBadge();
     }
   } else { // clásica
-    if (f === 'post') { const m = 88 * u; drawLogo(m, m, 46 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - m, titleSize: 96 * u, maxLines: 4, tagSize: 29 * u, textSize: 32 * u, textLines: 3, ctaSize: 28 * u }); }
-    else if (f === 'story') { const m = 96 * u; drawLogo(m, 150 * u, 54 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - 300 * u, titleSize: 116 * u, maxLines: 5, tagSize: 35 * u, textSize: 38 * u, textLines: 4, ctaSize: 34 * u }); }
-    else if (f === 'banner') { const m = 56; drawLogo(W - m - logoW(34), H - m - 34, 34); textBlock(ctx, S, { x: W * 0.4, w: W * 0.6 - m, align: 'right', bottom: H - m - 34 - 34, titleSize: 64, maxLines: 2, tagSize: 19, textSize: 0, textLines: 0, ctaSize: 0 }); }
-    else { const m = 72; drawLogo(m, m, 48); textBlock(ctx, S, { x: m, w: W * 0.42, align: 'left', bottom: H - m, titleSize: 60, maxLines: 2, tagSize: 18, textSize: 24, textLines: 2, ctaSize: 22 }); }
+    if (strip) { const mm = 56; drawLogo(W - mm - logoW(34), H - mm - 34, 34); textBlock(ctx, S, { x: W * 0.4, w: W * 0.6 - mm, align: 'right', bottom: H - mm - 34 - 34, titleSize: 64, maxLines: 2, tagSize: 19, textSize: 0, textLines: 0, ctaSize: 0 }); }
+    else if (shape === 'land') { drawLogo(m, m, 48 * u); textBlock(ctx, S, { x: m, w: W * 0.42, align: 'left', bottom: H - m, titleSize: 60 * u, maxLines: 2, tagSize: 18 * u, textSize: 24 * u, textLines: 2, ctaSize: 22 * u }); }
+    else if (shape === 'port') { drawLogo(m, topSafe, 54 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - botSafe, titleSize: 116 * u, maxLines: 5, tagSize: 35 * u, textSize: 38 * u, textLines: 4, ctaSize: 34 * u }); }
+    else { drawLogo(m, m, 46 * u); textBlock(ctx, S, { x: m, w: W - 2 * m, align: 'left', bottom: H - m, titleSize: 96 * u, maxLines: 4, tagSize: 29 * u, textSize: 32 * u, textLines: 3, ctaSize: 28 * u }); }
+    cornerBadge();
   }
+  // 7. Contacto y QR
+  if (hasFooter) await drawFooter(ctx, TPL_STYLES[tpl.style], W, H, band, shape === 'land' ? 72 * u0 : m);
+}
+/* PDF de una página con la pieza como imagen JPEG (sin dependencias externas) */
+function jpegPDF(jpeg, imgW, imgH, pageW, pageH) {
+  const enc = new TextEncoder();
+  const chunks = []; const offsets = []; let size = 0;
+  const push = part => { const b = typeof part === 'string' ? enc.encode(part) : part; chunks.push(b); size += b.length; };
+  const obj = (n, body) => { offsets[n] = size; push(`${n} 0 obj\n${body}\nendobj\n`); };
+  push('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, '<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>`);
+  offsets[4] = size;
+  push(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${imgW} /Height ${imgH} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
+  push(jpeg); push('\nendstream\nendobj\n');
+  const content = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q`;
+  obj(5, `<< /Length ${content.length} >>\nstream\n${content}\nendstream`);
+  const xref = size;
+  push(`xref\n0 6\n0000000000 65535 f \n${offsets.slice(1).map(o => `${String(o).padStart(10, '0')} 00000 n \n`).join('')}trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`);
+  return new Blob(chunks, { type: 'application/pdf' });
 }
 const escapeHTML = v => String(v || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 function signatureHTML(f) {
@@ -1097,12 +1346,19 @@ function renderTemplates() {
   const hasMedia = () => !!(tpl.image || tpl.video);
   const syncTools = () => {
     const F = TPL_FORMATS[tpl.format];
-    status.textContent = `${F.label} · ${F.size} px${tpl.video ? ` · video de ${tpl.clipLength} s` : ''}`;
+    status.textContent = `${F.label} · ${F.size} px${F.print ? ' · para imprimir' : ''}${tpl.video ? ` · video de ${tpl.clipLength} s` : ''}`;
     canvas.classList.toggle('is-draggable', hasMedia());
     imgTools.hidden = !hasMedia();
     videoTools.hidden = !tpl.video;
-    exportBtn.hidden = !tpl.video;
-    quickVideo.hidden = !tpl.video;
+    exportBtn.hidden = quickVideo.hidden = !tpl.video || !!F.print;
+    pdfBtns.forEach(b => { b.hidden = !F.print; });
+    hiField.hidden = tpl.layout !== 'destacado';
+    iconField.hidden = tpl.layout !== 'icono';
+    contactFields.hidden = !tpl.contact;
+    qrFields.hidden = !tpl.qr;
+    stripNote.hidden = F.shape !== 'strip' || !(tpl.contact || tpl.qr);
+    badgeNote.hidden = !(tpl.badge && F.shape === 'strip');
+    segs.forEach(sync => sync());
   };
   const redraw = (delay = 60) => {
     if (tpl.video && !tpl.video.paused) { syncTools(); return; } // el bucle del video ya redibuja
@@ -1122,18 +1378,45 @@ function renderTemplates() {
     loopId = requestAnimationFrame(tick);
   };
   const stopVideo = () => { cancelAnimationFrame(loopId); if (tpl.video) { tpl.video.pause(); URL.revokeObjectURL(tpl.video.src); } tpl.video = null; };
-  const input = (label, key, multiline, placeholder = '') => {
+  // Datos de contacto guardados en este navegador
+  const CONTACT_KEYS = ['contact', 'phone', 'web', 'address', 'qr', 'qrLink'];
+  try { Object.assign(tpl, JSON.parse(localStorage.getItem('crisger-contacto') || '{}')); } catch { /* sin datos guardados */ }
+  if (!tpl.address && data.location) tpl.address = data.location;
+  const saveContact = () => { try { localStorage.setItem('crisger-contacto', JSON.stringify(Object.fromEntries(CONTACT_KEYS.map(k => [k, tpl[k]])))); } catch { /* sin acceso */ } };
+  const fields = {};
+  const input = (label, key, multiline, placeholder = '', opts = {}) => {
     const id = `tpl-${key}`;
-    const el = h(multiline ? 'textarea' : 'input', { id, rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : 70, placeholder });
+    const el = h(multiline ? 'textarea' : 'input', { id, type: multiline ? undefined : (opts.type || 'text'), rows: multiline ? 3 : undefined, maxlength: multiline ? 180 : (opts.max || 70), placeholder });
     el.value = tpl[key];
-    el.addEventListener('input', () => { tpl[key] = el.value; redraw(); });
-    return h('div', { class: 'tpl-field' }, [h('label', { for: id, text: label }), el]);
+    el.addEventListener('input', () => { tpl[key] = el.value; if (CONTACT_KEYS.includes(key)) saveContact(); markPreset(''); redraw(); syncTools(); });
+    fields[key] = el;
+    return h('div', { class: 'tpl-field' }, [h('label', { for: id, text: label }), el, opts.help ? h('small', { class: 'tpl-help', text: opts.help }) : null]);
   };
   const check = (label, key) => {
     const el = h('input', { type: 'checkbox', id: `tpl-${key}`, checked: tpl[key] });
-    el.addEventListener('change', () => { tpl[key] = el.checked; redraw(0); });
+    el.addEventListener('change', () => { tpl[key] = el.checked; if (CONTACT_KEYS.includes(key)) saveContact(); redraw(0); syncTools(); });
+    fields[key] = el;
     return h('label', { class: 'tpl-check', for: `tpl-${key}` }, [el, label]);
   };
+  // Grupos de opciones que se actualizan solos cuando un propósito cambia la estructura o el formato
+  const segs = [];
+  const seg = (label, options, key) => {
+    const group = h('div', { class: 'segmented', role: 'group', 'aria-label': label }, options.map(([value, text]) =>
+      h('button', { type: 'button', text, 'data-value': value, onclick: () => { tpl[key] = value; markPreset(''); redraw(0); syncTools(); } })));
+    segs.push(() => $$('button', group).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.value === tpl[key]))));
+    return h('div', { class: 'control' }, [h('span', { class: 'control-label', text: label }), group]);
+  };
+  // Propósitos
+  const presetBar = h('div', { class: 'tpl-presets', role: 'group', 'aria-label': 'Empezar desde un propósito' });
+  const markPreset = key => { tpl.preset = key; $$('button', presetBar).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.value === key))); };
+  const applyPreset = (key, values) => {
+    Object.assign(tpl, values);
+    for (const k of ['tag', 'title', 'text', 'cta', 'highlight', 'badge']) if (fields[k]) fields[k].value = tpl[k];
+    if (fields.icon) fields.icon.value = tpl.icon;
+    markPreset(key); redraw(0); syncTools();
+    toast('Textos cargados: editalos a tu gusto');
+  };
+  TPL_PRESETS.forEach(([key, label, values]) => presetBar.append(h('button', { type: 'button', 'data-value': key, 'aria-pressed': 'false', text: label, onclick: () => applyPreset(key, values) })));
   const markThumbs = name => $$('.tpl-thumb', wrap).forEach(t => t.setAttribute('aria-pressed', String(t.title === name)));
   const resetFraming = name => { tpl.zoom = 1; tpl.ox = 0; tpl.oy = 0; zoom.value = 100; zoomOut.textContent = '100%'; imgName.textContent = name; tpl.imageName = name; markThumbs(name); };
   // Imagen de fondo
@@ -1293,16 +1576,56 @@ function renderTemplates() {
     v.currentTime = tpl.clipStart; startLoop();
   };
   const download = h('button', { type: 'button', class: 'btn btn-primary', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG']);
+  // Cartel: PDF en A4 o A3 (mismas proporciones, se escala sin deformarse)
+  const savePDF = async (label, pw, ph) => {
+    await drawTemplate(canvas);
+    canvas.toBlob(async blob => {
+      const jpeg = new Uint8Array(await blob.arrayBuffer());
+      saveBlob(jpegPDF(jpeg, canvas.width, canvas.height, pw, ph), `${fileBase()}-${label.toLowerCase()}.pdf`);
+      toast(`Cartel descargado en PDF ${label}`);
+    }, 'image/jpeg', 0.93);
+  };
+  const pdfBtns = [['A4', 595.28, 841.89], ['A3', 841.89, 1190.55]].map(([label, pw, ph]) =>
+    h('button', { type: 'button', class: 'btn btn-primary', hidden: true, onclick: () => savePDF(label, pw, ph) }, [icon(ICONS.download), `PDF ${label}`]));
   const exportBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
   const quickVideo = h('button', { type: 'button', class: 'btn btn-small btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
+  const hiField = input('Destacado (precio o número)', 'highlight', false, 'Por ejemplo: $ 45.900 o +20 años', { max: 16 });
+  const iconSelect = h('select', { id: 'tpl-icon' }, Object.keys(ICON_SET).map(n => h('option', { value: n, text: n })));
+  iconSelect.value = tpl.icon;
+  iconSelect.addEventListener('change', () => { tpl.icon = iconSelect.value; markPreset(''); redraw(0); });
+  fields.icon = iconSelect;
+  const iconField = h('div', { class: 'tpl-field' }, [h('label', { for: 'tpl-icon', text: 'Ícono' }), iconSelect]);
+  const badgeNote = h('p', { class: 'tpl-help', hidden: true, text: 'En la portada de LinkedIn el sello no se muestra.' });
+  const contactFields = h('div', { class: 'tpl-sub' }, [
+    input('Teléfono o WhatsApp', 'phone', false, '+54 9 336 000-0000', { type: 'tel', max: 30 }),
+    input('Sitio web o red social', 'web', false, 'crisger.com.ar', { max: 40 }),
+    input('Dirección', 'address', false, 'Calle 000, ciudad', { max: 60 })
+  ]);
+  const qrFields = h('div', { class: 'tpl-sub' }, [
+    input('Enlace del código QR', 'qrLink', false, 'https://…', { type: 'url', max: 300, help: 'Al escanearlo se abre este enlace. Probalo con el celular antes de imprimir.' }),
+    h('div', { class: 'tpl-upload' }, [
+      h('button', { type: 'button', class: 'btn btn-small btn-outline', text: 'Usar mi WhatsApp', onclick: () => {
+        const link = waLink(tpl.phone);
+        if (!link) { toast('Primero completá el teléfono con código de país y de área'); return; }
+        tpl.qrLink = link; fields.qrLink.value = link; saveContact(); redraw(0);
+      } }),
+      h('button', { type: 'button', class: 'btn btn-small btn-outline', text: 'Usar el sitio web', onclick: () => {
+        const w = String(tpl.web || '').trim();
+        if (!w) { toast('Primero completá el sitio web'); return; }
+        tpl.qrLink = /^https?:\/\//i.test(w) ? w : `https://${w}`; fields.qrLink.value = tpl.qrLink; saveContact(); redraw(0);
+      } })
+    ])
+  ]);
+  const stripNote = h('p', { class: 'tpl-help', hidden: true, text: 'La portada de LinkedIn es muy angosta para el contacto y el QR: elegí otro formato para mostrarlos.' });
   const step = (n, title, children) => h('div', { class: 'tpl-step' }, [h('span', { class: 'tpl-step-n', text: n }), h('div', { class: 'tpl-step-body' }, [h('strong', { class: 'tpl-step-title', text: title }), ...children])]);
   wrap.append(h('article', { class: 'kit-card tpl-card', id: 'generador' }, [
     h('div', { class: 'tpl-controls' }, [
       h('h4', { text: 'Piezas para redes y videollamadas' }),
+      h('div', { class: 'tpl-start' }, [h('span', { class: 'control-label', text: 'Empezá por un propósito (opcional)' }), presetBar]),
       step('1', 'Formato y estructura', [
-        segmented('Formato', Object.entries(TPL_FORMATS).map(([k, f]) => [k, f.label]), tpl.format, v => { tpl.format = v; redraw(0); }),
-        segmented('Estructura', TPL_LAYOUTS, tpl.layout, v => { tpl.layout = v; redraw(0); }),
-        segmented('Color', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), tpl.style, v => { tpl.style = v; redraw(0); })
+        seg('Formato', Object.entries(TPL_FORMATS).map(([k, f]) => [k, f.label]), 'format'),
+        seg('Estructura', TPL_LAYOUTS, 'layout'),
+        seg('Color', Object.entries(TPL_STYLES).map(([k, st]) => [k, st.label]), 'style')
       ]),
       step('2', 'Fondo: imagen o video (opcional)', [
         h('div', { class: 'tpl-upload' }, [h('label', { class: 'btn btn-small btn-outline file-button' }, [icon(ICONS.upload), 'Subir imagen o video', upload]),
@@ -1312,10 +1635,16 @@ function renderTemplates() {
         imgTools
       ]),
       step('3', 'Textos y logo', [
-        input('Etiqueta', 'tag'), input('Titular', 'title'), input('Texto', 'text', true), input('Botón (opcional)', 'cta', false, 'Por ejemplo: Consultanos'),
+        input('Etiqueta', 'tag'), hiField, input('Titular', 'title'), input('Texto', 'text', true), input('Botón (opcional)', 'cta', false, 'Por ejemplo: Consultanos'),
+        iconField,
+        input('Sello (opcional)', 'badge', false, 'Por ejemplo: Nuevo o -15%', { max: 12, help: 'Se muestra en un círculo en la esquina. No aparece en la portada de LinkedIn.' }), badgeNote,
         h('div', { class: 'tpl-checks' }, [check('Mostrar logo', 'showLogo'), check('Trama del isotipo', 'pattern')])
       ]),
-      h('div', { class: 'tpl-actions' }, [download, exportBtn, status])
+      step('4', 'Contacto y código QR (opcional)', [
+        h('div', { class: 'tpl-checks' }, [check('Datos de contacto', 'contact'), check('Código QR', 'qr')]),
+        contactFields, qrFields, stripNote
+      ]),
+      h('div', { class: 'tpl-actions' }, [download, ...pdfBtns, exportBtn, status])
     ]),
     h('div', { class: 'tpl-preview' }, [canvas, h('div', { class: 'tpl-quick' }, [h('button', { type: 'button', class: 'btn btn-small btn-primary', onclick: savePNG }, [icon(ICONS.download), 'Descargar PNG']), quickVideo])])
   ]));
@@ -1363,7 +1692,7 @@ function renderTemplates() {
     lists.length ? doc('checklists', 'Checklist para proveedores', 'Todos los puntos a verificar antes de producir una pieza, en un solo archivo de texto para adjuntar a un pedido.', [],
       [h('button', { type: 'button', class: 'btn btn-small btn-outline', onclick: () => { downloadBlob(`${data.brand} · Checklist para proveedores · ${data.version}\n\n` + lists.map(checklistText).join('\n\n') + '\n', 'crisger-checklist.txt', 'text/plain'); toast('Checklist descargado'); } }, [icon(ICONS.download), 'Descargar TXT'])]) : null
   ]));
-  requestAnimationFrame(() => { redraw(); drawSig(); });
+  requestAnimationFrame(() => { redraw(); drawSig(); syncTools(); });
   return wrap;
 }
 
