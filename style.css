@@ -881,6 +881,8 @@ html.editing .logo-stage img, html.editing .contrast-stage > *, html.editing .co
   .footer-edit { grid-column: 1; grid-row: auto; justify-self: start; }
 }
 @media (max-width: 640px) {
+  .hero { min-height: min(calc(100svh - var(--header-h)), 640px); }
+  .hero-inner { padding-top: 48px; padding-bottom: 40px; }
   .hero-bottom { flex-direction: column; align-items: flex-start; }
   .hero-cta { width: 100%; justify-content: space-between; }
   .module-body { font-size: 16px; }
@@ -888,6 +890,10 @@ html.editing .logo-stage img, html.editing .contrast-stage > *, html.editing .co
   .incorrect-card.is-correct { grid-column: span 2; flex-direction: column; }
   .incorrect-card.is-correct .incorrect-stage { aspect-ratio: 16 / 7; }
   .incorrect-card.is-correct .incorrect-caption { width: auto; }
+  /* Con una cantidad impar de errores, el último ocupa el ancho completo en lugar de quedar solo. */
+  .incorrect-card:not(.is-correct):last-child:nth-child(even) { grid-column: span 2; }
+  .incorrect-card:not(.is-correct):last-child:nth-child(even) .incorrect-stage { aspect-ratio: 16 / 7; }
+  .incorrect-card:not(.is-correct):last-child:nth-child(even) .error-logo { width: 46%; }
   .incorrect-caption { font-size: 13px; padding: 10px; gap: 8px; }
   .pattern-card { flex-basis: 100%; }
   .pattern-stage { aspect-ratio: 4 / 3; }
