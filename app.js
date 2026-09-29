@@ -38,7 +38,9 @@ const icon = path => {
 const ICONS = {
   prev: 'M15 5l-7 7 7 7', next: 'M9 5l7 7-7 7', copy: 'M9 9h10v10H9zM5 15V5h10',
   expand: 'M4 10V4h6M20 14v6h-6M4 4l6 6M20 20l-6-6', down: 'M12 5v14M5 12l7 7 7-7',
-  download: 'M12 4v11M7 10l5 5 5-5M5 20h14', upload: 'M12 20V9M7 14l5-5 5 5M5 4h14'
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14', upload: 'M12 20V9M7 14l5-5 5 5M5 4h14',
+  link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+  search: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM20 20l-4.8-4.8', check: 'M5 12.5l4.5 4.5L19 7.5'
 };
 
 /* ---------- Estado ---------- */
@@ -65,11 +67,12 @@ const KINDS = [
   ['showcase', 'Aplicación de galería'], ['logo', 'Sistema de logos'], ['clearspace', 'Espacio de protección'],
   ['incorrect', 'Usos incorrectos'], ['patterns', 'Carrusel de patrones'], ['palette', 'Paleta'],
   ['tints', 'Tonos y matices'], ['contrast', 'Contraste y jerarquía'], ['type-logo', 'Tipografía del logo'],
-  ['type-display', 'Muestra Bai Jamjuree'], ['type-body', 'Muestra Inter'], ['type-scale', 'Jerarquía tipográfica']
+  ['type-display', 'Muestra Bai Jamjuree'], ['type-body', 'Muestra Inter'], ['type-scale', 'Jerarquía tipográfica'],
+  ['dos', 'Así sí / Así no'], ['icons', 'Set de íconos']
 ];
-const GENERATED = new Set(['logo', 'clearspace', 'incorrect', 'patterns', 'palette', 'tints', 'contrast', 'type-logo', 'type-display', 'type-scale']);
-const WIDE = new Set(['incorrect', 'patterns', 'palette', 'tints', 'contrast', 'type-display', 'type-scale']);
-const ITEMS_INTERNAL = new Set(['incorrect', 'patterns', 'contrast', 'type-scale', 'essence']);
+const GENERATED = new Set(['logo', 'clearspace', 'incorrect', 'patterns', 'palette', 'tints', 'contrast', 'type-logo', 'type-display', 'type-scale', 'icons']);
+const WIDE = new Set(['incorrect', 'patterns', 'palette', 'tints', 'contrast', 'type-display', 'type-scale', 'icons']);
+const ITEMS_INTERNAL = new Set(['incorrect', 'patterns', 'contrast', 'type-scale', 'essence', 'dos', 'icons']);
 const THEMES = [['light', 'Blanco cálido'], ['white', 'Blanco'], ['dark', 'Negro']];
 
 const safeId = id => String(id || '').trim().replace(/[^a-z0-9-]/gi, '-').toLowerCase() || 'seccion';
@@ -222,6 +225,7 @@ function normalize(x) {
   d.sections.forEach((s, i) => {
     s.id = safeId(s.id || `seccion-${i + 1}`);
     s.kicker ??= ''; s.lead ??= ''; s.note ??= ''; s.navLabel ||= s.title;
+    s.checklist = Array.isArray(s.checklist) ? s.checklist.map(String).filter(Boolean) : [];
     s.theme = THEMES.some(([t]) => t === s.theme) ? s.theme : ['light', 'white', 'dark'][i % 3];
     s.modules.forEach((m, j) => {
       m.id ||= `${s.id}-${j + 1}`; m.body ??= ''; m.media ??= ''; m.note ??= '';
@@ -294,6 +298,7 @@ function renderSection(s, index) {
   const body = h('div', { class: 'chapter-body' });
   others.forEach((m, i) => body.append(renderModule(s, m, i)));
   if (showcases.length) body.append(renderGallery(showcases));
+  if (s.checklist.length) body.append(renderChecklist(s));
   sec.append(body);
   return sec;
 }
@@ -305,11 +310,12 @@ function moduleNumber(s, i) {
 
 function renderModule(s, m, i) {
   if (m.kind === 'feature') return renderFeature(m);
-  const wide = WIDE.has(m.kind) || (m.kind === 'standard' && !m.media);
-  const article = h('article', { class: `module kind-${m.kind} ${wide ? 'is-wide' : 'is-split'} reveal`, id: `bloque-${safeId(m.id)}` });
+  const wide = WIDE.has(m.kind) || (['standard', 'dos'].includes(m.kind) && !m.media);
+  const anchor = blockAnchor(m);
+  const article = h('article', { class: `module kind-${m.kind} ${wide ? 'is-wide' : 'is-split'} reveal`, id: anchor });
   const copy = h('div', { class: 'module-copy' }, [
     h('span', { class: 'module-number', text: moduleNumber(s, i) }),
-    h('h3', { text: m.title }),
+    h('h3', {}, [m.title, anchorButton(anchor, m.title)]),
     m.body ? h('p', { class: 'module-body', text: m.body }) : null
   ]);
   if (m.items.length && !ITEMS_INTERNAL.has(m.kind)) copy.append(h('ul', { class: 'module-list stagger' }, m.items.map(x => h('li', { text: x }))));
@@ -318,7 +324,8 @@ function renderModule(s, m, i) {
   const renderers = {
     logo: renderLogoDemo, clearspace: renderClearspace, incorrect: renderIncorrect, patterns: renderPatterns,
     palette: renderPalette, tints: renderToneLab, contrast: renderContrast, 'type-logo': renderTypeLogo,
-    'type-display': renderTypeDisplay, 'type-body': renderTypeBody, 'type-scale': renderTypeScale, essence: renderImage
+    'type-display': renderTypeDisplay, 'type-body': renderTypeBody, 'type-scale': renderTypeScale, essence: renderImage,
+    icons: renderIcons
   };
   (renderers[m.kind] || renderImage)(visual, m);
   if (!visual.childNodes.length) visual.classList.add('is-empty');
@@ -328,7 +335,91 @@ function renderModule(s, m, i) {
     article.append(h('ol', { class: 'concepts stagger' }, m.items.map((item, n) =>
       h('li', { class: 'concept' }, [h('span', { text: pad2(n + 1) }), h('strong', { text: item })]))));
   }
+  if (m.kind === 'dos' && m.items.length) article.append(renderDos(m));
   return article;
+}
+
+/* ---------- Enlaces directos a cada bloque ---------- */
+const blockAnchor = m => `bloque-${safeId(m.id).replace(/^bloque-/, '')}`;
+const pageURL = hash => `${location.origin}${location.pathname}#${hash}`;
+function anchorButton(id, title) {
+  return h('button', { type: 'button', class: 'anchor-btn', 'aria-label': `Copiar enlace a «${title}»`, title: 'Copiar enlace a este bloque',
+    onclick: e => { history.replaceState(null, '', `#${id}`); copyText(pageURL(id), 'Enlace', null); e.currentTarget.classList.add('is-done'); } }, icon(ICONS.link));
+}
+
+/* ---------- Así sí / Así no ---------- */
+function renderDos(m) {
+  const yes = [], no = [];
+  for (const line of m.items) {
+    const match = line.match(/^\s*(sí|si|no)\s*[:·—-]\s*(.+)$/i);
+    if (!match) yes.push(line.trim()); else (match[1].toLowerCase() === 'no' ? no : yes).push(match[2].trim());
+  }
+  const col = (kind, title, list) => list.length ? h('div', { class: `dos-col dos-${kind}` }, [
+    h('p', { class: 'dos-title' }, [h('span', { class: `mark ${kind === 'yes' ? 'ok' : 'no'}`, 'aria-hidden': 'true', text: kind === 'yes' ? '✓' : '×' }), h('strong', { text: title })]),
+    h('ul', { class: 'stagger' }, list.map(x => h('li', { text: x })))
+  ]) : null;
+  return h('div', { class: 'dos-grid' }, [col('yes', 'Así sí', yes), col('no', 'Así no', no)]);
+}
+
+/* ---------- Iconografía ---------- */
+const ICON_SET = {
+  'Casco': 'M2.5 17.5h19M4.5 17.5V16a7.5 7.5 0 0 1 15 0v1.5M10 8.8V13M14 8.8V13',
+  'Guantes': 'M8 21v-3.5l-3.3-4.1a1.6 1.6 0 0 1 2.5-2L9 13.5V5.5a1.5 1.5 0 0 1 3 0V11V4.5a1.5 1.5 0 0 1 3 0V11V6a1.5 1.5 0 0 1 3 0v9a6 6 0 0 1-6 6z',
+  'Calzado': 'M5 3h7v8l5.5 2.2A4 4 0 0 1 20 17v2H5zM5 15h15M12 7h-3',
+  'Chaleco': 'M8.5 3L5 6.5V21h5.5v-6h3v6H19V6.5L15.5 3 12 8zM5 12.5h5.5M13.5 12.5H19',
+  'Protección ocular': 'M3 9.5h18v3.5a3 3 0 0 1-3 3h-2.5l-2-2.5h-3l-2 2.5H6a3 3 0 0 1-3-3z',
+  'Protección auditiva': 'M5 14a7 7 0 0 1 14 0M3.5 13.5h3.5v6.5H3.5zM17 13.5h3.5v6.5H17z',
+  'Protección': 'M12 3L4.5 6v5.5c0 4.5 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5 7.5-9.5V6zM8.8 12l2.3 2.3 4.2-4.6',
+  'Envío': 'M2.5 6h11v10h-11zM13.5 9.5h4l3 3.5v3h-7M5 17.5a1.7 1.7 0 1 0 3.4 0 1.7 1.7 0 1 0-3.4 0M15.6 17.5a1.7 1.7 0 1 0 3.4 0 1.7 1.7 0 1 0-3.4 0',
+  'Stock': 'M3.5 7.5L12 3.2l8.5 4.3v9L12 20.8l-8.5-4.3zM3.5 7.5L12 11.8l8.5-4.3M12 11.8v9',
+  'Asesoramiento': 'M4 4.5h16v11H9.5L4 19.5zM8 8.5h8M8 11.5h5',
+  'Teléfono': 'M5.5 4h3.3l1.7 4.4-2.2 1.4a11 11 0 0 0 5.9 5.9l1.4-2.2 4.4 1.7v3.3a1.5 1.5 0 0 1-1.5 1.5A15.5 15.5 0 0 1 4 5.5 1.5 1.5 0 0 1 5.5 4z',
+  'Ubicación': 'M12 21s-6.5-5.7-6.5-11a6.5 6.5 0 0 1 13 0c0 5.3-6.5 11-6.5 11zM12 7.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 1 0 0-5'
+};
+const iconSVG = (path, color = 'currentColor') => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${path}"/></svg>`;
+function renderIcons(host, m) {
+  const names = (m.items.length ? m.items : Object.keys(ICON_SET)).filter(n => ICON_SET[n]);
+  const grid = h('ul', { class: 'icon-grid stagger' });
+  let bg = ui.iconBg || 'claro';
+  const colorFor = () => (bg === 'oscuro' ? '#FFFFFF' : brandColor('#000000', 1));
+  names.forEach((name, i) => grid.append(h('li', {}, h('button', { type: 'button', class: `icon-tile${i === 0 ? ' is-accent' : ''}`, 'aria-label': `Copiar SVG del ícono ${name}`,
+    onclick: e => copyText(iconSVG(ICON_SET[name], e.currentTarget.classList.contains('is-accent') && bg !== 'naranja' ? brandColor('#FE5000', 0) : colorFor()), `Ícono ${name}`, e.currentTarget) }, [
+    icon(ICON_SET[name]), h('span', { text: name })
+  ]))));
+  const stage = h('div', { class: `icon-stage bg-${bg}` }, grid);
+  const tabs = segmented('Fondo', LOGO_BGS, bg, v => { bg = ui.iconBg = v; stage.className = `icon-stage bg-${v}`; });
+  host.append(h('div', { class: 'icon-demo' }, [
+    h('div', { class: 'icon-toolbar' }, [tabs,
+      h('p', { class: 'icon-hint', text: 'Tocá un ícono para copiar su SVG. El primero muestra el acento naranja.' })]),
+    stage
+  ]));
+}
+
+/* ---------- Checklist para proveedores ---------- */
+function checklistText(s) { return `${data.brand} · ${s.navLabel || s.title}\n` + s.checklist.map(x => `[ ] ${x}`).join('\n'); }
+function renderChecklist(s) {
+  const id = `checklist-${s.id}`;
+  const count = h('span', { class: 'checklist-count', 'aria-live': 'polite' });
+  const boxes = [];
+  const update = () => { const n = boxes.filter(b => b.checked).length; count.textContent = `${n} / ${boxes.length}`; wrap.classList.toggle('is-complete', n === boxes.length); };
+  const list = h('ul', { class: 'checklist-list' }, s.checklist.map((item, i) => {
+    const box = h('input', { type: 'checkbox', id: `${id}-${i}`, onchange: update });
+    boxes.push(box);
+    return h('li', {}, [box, h('label', { for: `${id}-${i}` }, [h('span', { class: 'checklist-box', 'aria-hidden': 'true' }, icon(ICONS.check)), h('span', { text: item })])]);
+  }));
+  const wrap = h('aside', { class: 'checklist reveal', id, 'aria-labelledby': `${id}-title` }, [
+    h('div', { class: 'checklist-head' }, [
+      h('div', {}, [h('span', { class: 'module-number', text: 'Antes de producir' }), h('h3', { id: `${id}-title` }, ['Checklist para proveedores', anchorButton(id, `Checklist · ${s.navLabel || s.title}`)])]),
+      count
+    ]),
+    list,
+    h('div', { class: 'kit-actions' }, [
+      h('button', { type: 'button', class: 'btn btn-small btn-outline', onclick: () => copyText(checklistText(s), 'Checklist') }, [icon(ICONS.copy), 'Copiar lista']),
+      h('button', { type: 'button', class: 'btn btn-small btn-ghost', onclick: () => { boxes.forEach(b => { b.checked = false; }); update(); } }, 'Reiniciar')
+    ])
+  ]);
+  update();
+  return wrap;
 }
 
 function renderImage(host, m) {
@@ -743,10 +834,10 @@ function renderKit() {
       }))
     ]));
   });
-  body.append(h('div', { class: 'reveal' }, [h('h3', { class: 'kit-subtitle', text: 'Logos' }), grid]));
+  body.append(h('div', { class: 'reveal', id: 'kit-logos' }, [h('h3', { class: 'kit-subtitle', text: 'Logos' }), grid]));
   // Colores y tipografías
   const fonts = [['Bai Jamjuree Regular', 'fonts/bai-regular.ttf', 400], ['Bai Jamjuree SemiBold', 'fonts/bai-semibold.ttf', 600], ['Bai Jamjuree Bold', 'fonts/bai-bold.ttf', 700], ['Inter (variable)', 'fonts/inter-variable.ttf', 400]];
-  body.append(h('div', { class: 'kit-row reveal' }, [
+  body.append(h('div', { class: 'kit-row reveal', id: 'kit-paleta' }, [
     h('article', { class: 'kit-card kit-colors' }, [
       h('h3', { text: 'Paleta' }),
       h('div', { class: 'kit-swatches' }, data.palette.map(c => h('i', { style: { background: c.hex }, title: `${c.name} ${c.hex}` }))),
@@ -1205,7 +1296,7 @@ function renderTemplates() {
   const exportBtn = h('button', { type: 'button', class: 'btn btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
   const quickVideo = h('button', { type: 'button', class: 'btn btn-small btn-primary', hidden: true, onclick: exportVideo }, [icon(ICONS.download), 'Exportar video']);
   const step = (n, title, children) => h('div', { class: 'tpl-step' }, [h('span', { class: 'tpl-step-n', text: n }), h('div', { class: 'tpl-step-body' }, [h('strong', { class: 'tpl-step-title', text: title }), ...children])]);
-  wrap.append(h('article', { class: 'kit-card tpl-card' }, [
+  wrap.append(h('article', { class: 'kit-card tpl-card', id: 'generador' }, [
     h('div', { class: 'tpl-controls' }, [
       h('h4', { text: 'Piezas para redes y videollamadas' }),
       step('1', 'Formato y estructura', [
@@ -1249,7 +1340,7 @@ function renderTemplates() {
     }
     toast('Firma copiada: pegala en la configuración de tu correo');
   };
-  wrap.append(h('article', { class: 'kit-card sig-card' }, [
+  wrap.append(h('article', { class: 'kit-card sig-card', id: 'firma' }, [
     h('div', { class: 'tpl-controls' }, [
       h('h4', { text: 'Firma de correo' }),
       h('div', { class: 'sig-grid' }, [sigField('Nombre y apellido', 'name', 'Nombre Apellido'), sigField('Cargo', 'role', 'Cargo'), sigField('Teléfono', 'phone', '+54 000 000-0000', 'tel'), sigField('Correo', 'mail', 'nombre@empresa.com', 'email')]),
@@ -1263,11 +1354,14 @@ function renderTemplates() {
   ]));
   // Documentos listos
   const k = data.kit;
-  const doc = (title, text, links) => h('article', { class: 'kit-card doc-card' }, [h('h4', { text: title }), h('p', { text }),
-    h('div', { class: 'kit-actions' }, links.filter(l => l[1]).map(([label, href]) => h('a', { class: 'btn btn-small btn-outline', href, download: fileName(href) }, [icon(ICONS.download), label])))]);
-  wrap.append(h('div', { class: 'kit-row' }, [
-    doc('Hoja membretada', 'Formato A4 con el logo, la línea naranja y los datos de la marca. En Word para escribir; en PDF para imprimir.', [['Word (.docx)', k.letterheadDocx], ['PDF', k.letterheadPdf]]),
-    doc('Manual en PDF', 'Una versión del manual para enviar a imprentas o proveedores. También podés imprimir esta página: el diseño se adapta solo.', [['Descargar PDF', k.manualPdf]])
+  const doc = (id, title, text, links, extra = []) => h('article', { class: 'kit-card doc-card', id }, [h('h4', { text: title }), h('p', { text }),
+    h('div', { class: 'kit-actions' }, [...links.filter(l => l[1]).map(([label, href]) => h('a', { class: 'btn btn-small btn-outline', href, download: fileName(href) }, [icon(ICONS.download), label])), ...extra])]);
+  const lists = data.sections.filter(s => s.checklist.length);
+  wrap.append(h('div', { class: 'kit-row kit-docs' }, [
+    doc('membretada', 'Hoja membretada', 'Formato A4 con el logo, la línea naranja y los datos de la marca. En Word para escribir; en PDF para imprimir.', [['Word (.docx)', k.letterheadDocx], ['PDF', k.letterheadPdf]]),
+    doc('manual-pdf', 'Manual en PDF', 'Una versión del manual para enviar a imprentas o proveedores. También podés imprimir esta página: el diseño se adapta solo.', [['Descargar PDF', k.manualPdf]]),
+    lists.length ? doc('checklists', 'Checklist para proveedores', 'Todos los puntos a verificar antes de producir una pieza, en un solo archivo de texto para adjuntar a un pedido.', [],
+      [h('button', { type: 'button', class: 'btn btn-small btn-outline', onclick: () => { downloadBlob(`${data.brand} · Checklist para proveedores · ${data.version}\n\n` + lists.map(checklistText).join('\n\n') + '\n', 'crisger-checklist.txt', 'text/plain'); toast('Checklist descargado'); } }, [icon(ICONS.download), 'Descargar TXT'])]) : null
   ]));
   requestAnimationFrame(() => { redraw(); drawSig(); });
   return wrap;
@@ -1328,7 +1422,7 @@ function initPresenter() {
   $('#presenterExit').addEventListener('click', presStop);
   document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && pres.on && pres.fs) presStop(); });
   document.addEventListener('keydown', e => {
-    if (!pres.on || $('#lightbox').open || $('#editor').open) return;
+    if (!pres.on || $('#lightbox').open || $('#editor').open || $('#search').open) return;
     const t = e.target;
     const typing = t.matches?.('input, textarea, select, [contenteditable], .pattern-track');
     if (e.key === 'Escape') { e.preventDefault(); presStop(); return; }
@@ -1507,6 +1601,144 @@ function initNavigation() {
   });
 }
 
+/* ---------- Buscador ---------- */
+const fold = v => String(v || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+function triggerDownload(href) { const a = h('a', { href, download: fileName(href) }); document.body.append(a); a.click(); a.remove(); }
+function goTo(id) {
+  const target = document.getElementById(id);
+  if (!target) return;
+  target.scrollIntoView({ behavior: reduceMotion() ? 'auto' : 'smooth', block: 'start' });
+  history.replaceState(null, '', `#${id}`);
+  const focusTarget = target.matches('[tabindex]') ? target : target.querySelector('h2, h3, h4') || target;
+  if (!focusTarget.matches('[tabindex], a, button, input')) focusTarget.setAttribute('tabindex', '-1');
+  focusTarget.focus({ preventScroll: true });
+}
+function searchIndex() {
+  const out = [];
+  const add = (type, title, context, text, run) => out.push({ type, title, context, run, hay: fold(`${title} ${context} ${text}`), t: fold(title) });
+  for (const s of data.sections) {
+    const label = s.navLabel || s.title;
+    add('Sección', s.title, s.kicker, `${label} ${s.lead} ${s.note}`, () => goTo(s.id));
+    const showcases = s.modules.filter(m => m.kind === 'showcase');
+    for (const m of s.modules) {
+      if (m.kind === 'showcase') add('Aplicación', m.title, `${label} · ${m.category || 'Galería'}`, m.body, () => openLightbox(showcases, showcases.indexOf(m), null));
+      else add('Bloque', m.title, label, `${m.body} ${m.items.join(' ')} ${m.note}`, () => goTo(blockAnchor(m)));
+    }
+    if (s.checklist.length) add('Checklist', `Checklist · ${label}`, 'Para proveedores', s.checklist.join(' '), () => goTo(`checklist-${s.id}`));
+  }
+  for (const c of data.palette) add('Color', c.name, `${c.hex} · copiar`, `${c.hex} ${c.hex.slice(1)} rgb ${c.rgb} cmyk ${c.cmyk} color paleta`, () => copyText(c.hex, c.hex));
+  for (const [v, label] of LOGO_VARIANTS) for (const [bg, bgLabel] of LOGO_BGS) {
+    const src = logoAsset(v, bg), png = pngFor(src);
+    add('Logo', `${label} · fondo ${bgLabel.toLowerCase()}`, png ? 'Descargar SVG · PNG en el kit' : 'Descargar SVG', `logo ${v} ${bg} svg png descargar archivo`, () => { if (src.startsWith('data:')) goTo('kit-logos'); else triggerDownload(src); });
+  }
+  const k = data.kit;
+  const tools = [
+    ['Paquete de logos (ZIP)', 'Kit · descarga', 'zip todos los logos descargar', k.zip ? () => triggerDownload(k.zip) : null],
+    ['Paleta en CSS y texto para imprenta', 'Kit', 'colores descargar css txt imprenta', () => goTo('kit-paleta')],
+    ['Tipografías Bai Jamjuree e Inter', 'Kit', 'fuentes ttf descargar tipografia', () => goTo('kit-paleta')],
+    ['Generador de piezas', 'Kit · plantillas', 'redes instagram linkedin historia publicacion videollamada fondo plantilla video png', () => goTo('generador')],
+    ['Firma de correo', 'Kit · plantillas', 'mail email gmail outlook firma', () => goTo('firma')],
+    ['Hoja membretada', 'Kit · Word y PDF', 'carta papel membrete docx', () => goTo('membretada')],
+    ['Manual en PDF', 'Kit · descarga', 'imprimir imprenta proveedores pdf', () => goTo('manual-pdf')],
+    ['Checklist completo', 'Kit · descarga', 'proveedores lista verificar txt', () => goTo('checklists')]
+  ];
+  for (const [title, context, text, run] of tools) if (run) add('Kit', title, context, text, run);
+  return out;
+}
+const search = { index: [], results: [], active: 0, opener: null };
+function runSearch(q) {
+  const terms = fold(q).split(/\s+/).filter(Boolean);
+  if (!terms.length) return search.index.filter(x => x.type === 'Sección' || x.type === 'Kit').slice(0, 14);
+  return search.index
+    .filter(x => terms.every(t => x.hay.includes(t)))
+    .map(x => ({ x, score: terms.reduce((acc, t) => acc + (x.t.startsWith(t) ? 6 : x.t.includes(t) ? 3 : 1), 0) + (x.type === 'Sección' ? 1 : 0) }))
+    .sort((a, b) => b.score - a.score).slice(0, 14).map(r => r.x);
+}
+function drawSearch() {
+  const list = $('#searchResults');
+  const q = $('#searchInput').value;
+  search.results = runSearch(q);
+  search.active = Math.min(search.active, Math.max(0, search.results.length - 1));
+  list.replaceChildren(...search.results.map((r, i) => h('li', { id: `sr-${i}`, role: 'option', class: 'search-item', 'aria-selected': String(i === search.active),
+    onclick: () => pickSearch(i), onmousemove: () => { if (search.active !== i) { search.active = i; markSearch(); } } }, [
+    h('span', { class: 'search-type', text: r.type }),
+    h('span', { class: 'search-text' }, [h('strong', { text: r.title }), h('small', { text: r.context })])
+  ])));
+  $('#searchEmpty').hidden = search.results.length > 0;
+  $('#searchStatus').textContent = q ? `${search.results.length} ${search.results.length === 1 ? 'resultado' : 'resultados'}` : '';
+  markSearch();
+}
+function markSearch() {
+  $$('#searchResults li').forEach((li, i) => li.setAttribute('aria-selected', String(i === search.active)));
+  const cur = $(`#sr-${search.active}`);
+  $('#searchInput').setAttribute('aria-activedescendant', cur ? cur.id : '');
+  cur?.scrollIntoView({ block: 'nearest' });
+}
+function pickSearch(i) {
+  const r = search.results[i];
+  if (!r) return;
+  search.opener = null;
+  $('#search').close();
+  requestAnimationFrame(() => r.run());
+}
+function openSearch() {
+  if (!data || $('#search').open) return;
+  if ($('#lightbox').open || $('#editor').open) return;
+  search.index = searchIndex();
+  search.opener = document.activeElement;
+  search.active = 0;
+  $('#searchInput').value = '';
+  drawSearch();
+  $('#search').showModal();
+  document.documentElement.classList.add('modal-open');
+  $('#searchInput').focus();
+}
+function initSearch() {
+  const dlg = $('#search');
+  const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  $('#searchKey').textContent = isMac ? '⌘K' : 'Ctrl K';
+  $('#searchBtn').addEventListener('click', openSearch);
+  $('#searchInput').addEventListener('input', () => { search.active = 0; drawSearch(); });
+  $('#searchInput').addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); search.active = Math.min(search.results.length - 1, search.active + 1); markSearch(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); search.active = Math.max(0, search.active - 1); markSearch(); }
+    else if (e.key === 'Enter') { e.preventDefault(); pickSearch(search.active); }
+  });
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  dlg.addEventListener('close', () => { document.documentElement.classList.remove('modal-open'); search.opener?.focus?.({ preventScroll: true }); });
+  document.addEventListener('keydown', e => {
+    const typing = e.target.matches?.('input, textarea, select, [contenteditable]');
+    if ((e.key === 'k' || e.key === 'K') && (e.metaKey || e.ctrlKey)) { e.preventDefault(); openSearch(); }
+    else if (e.key === '/' && !typing && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); openSearch(); }
+  });
+}
+
+/* ---------- Tema claro u oscuro ---------- */
+const THEME_KEY = 'crisger-theme';
+const THEME_MODES = { auto: 'Automático', light: 'Claro', dark: 'Oscuro' };
+function themePref() { try { return localStorage.getItem(THEME_KEY) || 'auto'; } catch { return 'auto'; } }
+function applyTheme(pref = themePref()) {
+  const dark = pref === 'dark' || (pref === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark', dark);
+  const btn = $('#themeBtn');
+  if (btn) {
+    btn.dataset.mode = pref;
+    btn.setAttribute('aria-label', `Tema: ${THEME_MODES[pref].toLowerCase()}. Cambiar tema`);
+    btn.title = `Tema: ${THEME_MODES[pref]}`;
+  }
+}
+function initTheme() {
+  applyTheme();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => applyTheme());
+  $('#themeBtn').addEventListener('click', () => {
+    const order = ['auto', 'dark', 'light'];
+    const next = order[(order.indexOf(themePref()) + 1) % order.length];
+    try { next === 'auto' ? localStorage.removeItem(THEME_KEY) : localStorage.setItem(THEME_KEY, next); } catch { /* sin acceso */ }
+    applyTheme(next);
+    toast(`Tema ${THEME_MODES[next].toLowerCase()}${next === 'auto' ? ': sigue la configuración del dispositivo' : ''}`);
+  });
+}
+
 /* ---------- Editor ---------- */
 function field(host, label, value, change, opts = {}) {
   const id = `f-${Math.random().toString(36).slice(2, 9)}`;
@@ -1612,6 +1844,7 @@ function renderEditor() {
       field(g, 'Introducción', s.lead, v => edit(() => { s.lead = v; }), { multiline: true, rows: 3 });
       field(g, 'Nota', s.note, v => edit(() => { s.note = v; }), { multiline: true, rows: 2 });
       selectField(g, 'Fondo', THEMES, s.theme, v => edit(() => { s.theme = v; }, 0));
+      field(g, 'Checklist para proveedores', s.checklist.join('\n'), v => edit(() => { s.checklist = v.split('\n').map(x => x.trim()).filter(Boolean); }), { multiline: true, rows: 4, help: 'Una línea por punto a verificar. Dejalo vacío para ocultar el checklist.' });
       field(g, 'Ancla (id)', s.id, () => {}, { readonly: true, help: 'Identificador fijo del enlace: #' + s.id });
       actionRow(host, [
         ['↑ Subir', () => move(data.sections, editorState.si, -1, 'si'), 'btn-ghost', editorState.si === 0],
@@ -1646,7 +1879,9 @@ function renderEditor() {
         patterns: 'Una línea por patrón. Los diseños se alternan: trama técnica y ritmo alternado.',
         contrast: 'Líneas: 1 etiqueta, 2 titular, 3 texto, 4 acento.',
         'type-scale': 'Una línea por nivel: «Referencia — Texto de ejemplo».',
-        essence: 'Cada línea se muestra como un concepto.'
+        essence: 'Cada línea se muestra como un concepto.',
+        dos: 'Empezá cada línea con «Sí:» o «No:» para ubicarla en la columna correspondiente.',
+        icons: `Una línea por ícono. Disponibles: ${Object.keys(ICON_SET).join(', ')}.`
       }[m.kind];
       field(g, 'Lista (una línea por elemento)', m.items.join('\n'), v => edit(() => { m.items = v.split('\n').map(x => x.trim()).filter(Boolean); }), { multiline: true, rows: 4, help: listHelp });
       field(g, m.kind === 'feature' ? 'Etiqueta' : 'Nota', m.note, v => edit(() => { m.note = v; }), { multiline: true, rows: 2 });
@@ -1781,6 +2016,8 @@ function initEditMode() {
   initEditor();
   initEditMode();
   initPresenter();
+  initSearch();
+  initTheme();
   // Al imprimir o guardar como PDF: carga todas las imágenes y muestra todo el contenido.
   window.addEventListener('beforeprint', () => {
     $$('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; });
